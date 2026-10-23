@@ -12,7 +12,7 @@ const BOOT_GATE = ["biometric-scan", 2.3];
 const LANDING = ["name", 1.5];
 const GUN_SAFETY_MS = 15000;   // never leave the boot stuck at 97%
 const COLOR = FIELD_BG;
-const REST_SLUG = "loaded-rest";
+const REST_SLUG = "laced-rest";
 
 const $ = (id) => document.getElementById(id);
 const stage = $("stage"), viewport = $("viewport"), gunCanvas = $("gun"), starsCanvas = $("stars");
@@ -40,7 +40,7 @@ const gunApi = {
   highlight: (part) => gunReal?.highlight(part),
   setVisible: (v) => gunReal?.setVisible(v),
 };
-const env = { gun: gunApi, mouse, clock: 0, C };
+const env = { shoe: gunApi, mouse, clock: 0, C };
 
 // ---------- grain ----------
 function makeGrain() {
@@ -370,7 +370,7 @@ function show(time) {
   const ammo = clamp(Math.round(s.ammo || 0), 0, pips.length);
   if (ammo !== lastAmmo) { pips.forEach((u, i) => u.classList.toggle("on", i < ammo)); lastAmmo = ammo; }
   if (s.act !== lastAct) { actEl.textContent = s.act || ""; lastAct = s.act; }
-  const gv = !!s.gun;
+  const gv = !!s.shoe;
   if (gv !== lastGunVis) { gunCanvas.style.visibility = gv ? "" : "hidden"; gunReal?.setVisible(gv); lastGunVis = gv; }
 
   env.clock = clock;
@@ -431,9 +431,9 @@ window.__shots = scenes;
 // ---------- boot ----------
 async function loadGun() {
   try {
-    const { mountGun } = await import("./shoe.js");
-    gunReal = await mountGun(gunCanvas, state, { pixelRatio: gunPixelRatio(), interactive: !coarse });
-    gunReal?.setVisible(!!active?.gun);
+    const { mountShoe } = await import("./shoe.js");
+    gunReal = await mountShoe(gunCanvas, state, { pixelRatio: gunPixelRatio(), interactive: !coarse });
+    gunReal?.setVisible(!!active?.shoe);
   } catch (e) {
     console.error("3D layer", e);
     gunReal = null;

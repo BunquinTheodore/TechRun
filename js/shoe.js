@@ -136,7 +136,7 @@ function makeEnvironment(renderer) {
 }
 
 // ---------------------------------------------------------------- mount
-export async function mountGun(canvas, state, opts = {}) {
+export async function mountShoe(canvas, state, opts = {}) {
   const interactive = opts.interactive !== false;
   const renderer = new THREE.WebGLRenderer({
     canvas, alpha: true, antialias: true, powerPreference: "high-performance",
