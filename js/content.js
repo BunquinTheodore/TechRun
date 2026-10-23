@@ -1,75 +1,118 @@
-// All copy and data for the site. Replace the placeholder values with your own; nothing else needs to change.
+// All copy and data for the site. Values marked TBA are placeholders until the organisers confirm them.
+const EMAIL = "techrun.contactus@gmail.com";
+const mail = (subject) => `mailto:${EMAIL}?subject=${encodeURIComponent(subject)}`;
+
 export const CONTENT = {
-  person: {
-    lines: ["THEODORE", "VON", "JOSHUA"],
-    first: "Theodore",
-    last: "Von Joshua",
-    title: "Full Stack AI Engineer",
-    tagline: "I build AI tools, RAG systems, and web and mobile apps.",
+  brand: {
+    name: "TechRun",
+    lines: ["TECH", "RUN", "2027"],      // hero, one word per line
+    year: "2027",
+    org: "GN Club",
+    title: "TechRun 2027",
+    tagline: "Move people for a brighter tomorrow.",
+    email: EMAIL,
   },
-  words: ["BUILD", "SHIP", "ITERATE", "REPEAT"],
-  location: { city: "Your City", country: "Your Country", lat: 51.5, lon: -0.12, tz: "Europe/London", tzLabel: "GMT+0" },
-  education: {
-    degree: "Bachelor of Science in Computer Science",
-    short: "BS Computer Science",
-    school: "Your University",
-    place: "Your City, Your Country",
-    years: "2021 — 2025",
+  // images and sprites (paths relative to index.html)
+  assets: {
+    logoRing: "assets/img/logo-ring.png",   // TR mark in gradient ring, transparent; DARK fields only
+    badge: "assets/img/badge-pixel.png",     // pixel-dot gradient ring + white TR mark, transparent; DARK fields only
+    mark: "assets/img/tr-mark.png",          // white + gradient TR mark, transparent; DARK fields only
+    markInk: "assets/img/mark-ink.png",      // black + gradient TR mark, transparent; LIGHT fields only
+    markSolid: "assets/img/mark-solid.png",  // solid black TR mark, transparent; LIGHT fields (lime/cyan/orange)
+    halftone: "assets/img/halftone-burst.jpg", // 1000x1000 black/grey halftone burst, white mark (texture, framed use)
+    covers: {                                // 851x315 social banners: low-res, ONLY inside a framed element <= 900px wide
+      dark: "assets/img/cover-dark.jpg",     // black: runner, pixel staircase, wordmark, tagline
+      halftone: "assets/img/cover-halftone.jpg", // white halftone with wordmark
+    },
+    runnerLegs: "assets/img/runner-legs.png", // b/w runner legs cut-out, transparent
+    stairs: "assets/img/pixel-stairs.png",   // gradient pixel staircase, transparent
+    splash: "assets/img/splash.png",         // gradient paint splash strip, transparent
+    trophy: "assets/img/trophy.png",         // pixel trophy, transparent
+    paint: "assets/img/paint-window.png",    // retro paint window
+    icons: "assets/img/retro-icons.png",     // collage of Y2K desktop icons
+    blob: "assets/img/gradient-blob.jpg",    // soft brand gradient field
+    photos: {
+      computer: "assets/img/retro-computer.jpg", hills: "assets/img/xp-hills.jpg", runners: "assets/img/runners-80s.jpg",
+      paintGuy: "assets/img/paint-guy.jpg", matrix: "assets/img/matrix-kid.jpg", errors: "assets/img/error-windows.jpg",
+      tv: "assets/img/tv-store.jpg", bibs: "assets/img/race-bibs.jpg", singlets: "assets/img/singlets.jpg",
+      sweater: "assets/img/model-sweater.jpg", backpack: "assets/img/backpack.jpg", caps: "assets/img/caps.jpg", crew: "assets/img/crew.jpg",
+    },
+    // pixel runners, 512x512 transparent GIFs, 8 frames each
+    runners: {
+      cyber: { name: "Cyber", walk: "assets/gif/cyber-walk.gif", run: "assets/gif/cyber-run.gif" },
+      hoodie: { name: "Hoodie", walk: "assets/gif/hoodie-walk.gif", run: "assets/gif/hoodie-run.gif" },
+      cap: { name: "Cap", walk: "assets/gif/cap-walk.gif", run: "assets/gif/cap-run.gif" },
+    },
   },
-  work: [
-    { company: "Company One", role: "AI Engineer", since: "2026", url: "https://example.com", domain: "company-one.com" },
-    { company: "Startup Two", role: "Co-Founder, CTO", since: "2026", url: "https://example.com", domain: "startup-two.com" },
-    { company: "Studio Three", role: "Co-Founder, COO", since: "2025", url: "https://example.com", domain: "studio-three.com" },
-    { company: "Client Four", role: "Full Stack Developer", since: "2023", url: "https://example.com", domain: "client-four.com" },
+  words: ["MOVE", "PEOPLE", "BRIGHTER", "TOMORROW"],
+  // venue is TBA; the globe points at the host city
+  location: { city: "Metro Manila", country: "Philippines", venue: "Venue TBA", lat: 14.6, lon: 121.0, tz: "Asia/Manila", tzLabel: "GMT+8" },
+  organizer: {
+    label: "Organized by",
+    name: "GN Club",
+    line: "A tech-powered fun run",
+    mission: "Move people for a brighter tomorrow",
+    edition: "Edition 2027",
+    date: "Date TBA",
+  },
+  // race categories (scene: distances)
+  categories: [
+    { name: "3K", label: "Fun Run", note: "Walk it, jog it, bring the crew", bib: "30001", url: mail("TechRun 2027 · 3K registration") },
+    { name: "5K", label: "Run", note: "The classic distance", bib: "50001", url: mail("TechRun 2027 · 5K registration") },
+    { name: "10K", label: "Challenge", note: "For the ones chasing a PR", bib: "10001", url: mail("TechRun 2027 · 10K registration") },
   ],
-  // one entry per gun part; `primary` lists the item indexes drawn as the strongest skills
-  skills: {
-    suppressor: { part: "Suppressor", group: "AI & ML", items: ["Prompt Engineering", "RAG Systems", "LLM Fine-Tuning", "Whisper (STT)", "Semantic Kernel", "LoRA", "Hugging Face", "Vector DBs"], primary: [0, 1, 2] },
-    barrel: { part: "Barrel", group: "Backend", items: ["Node.js", "Vercel", "PostgreSQL", "Prisma", "REST API", "Firebase", "Docker"], primary: [0, 2] },
-    slide: { part: "Slide", group: "Frameworks", items: ["Next.js", "React", "Tailwind", "GSAP", "Shadcn", "Three.js", "R3F / Drei", "WPF"], primary: [0, 1, 5] },
-    frame: { part: "Frame", group: "Languages", items: ["Python", "C#", "Kotlin", "Java", "TypeScript", "JavaScript", "C++", "C", "Rust", "Bash"], primary: [0, 4] },
-    sights: { part: "Sights", group: "Tools", items: ["Git", "Android Studio", "IntelliJ", ".NET", "JADX", "LSPosed"], primary: [0] },
-    grip: { part: "Grip", group: "Creative", items: ["Photoshop", "After Effects", "Premiere Pro", "Blender"], primary: [0, 3] },
+  // one entry per shoe part (gun.js PARTS); `primary` lists item indexes drawn as highlights
+  kit: {
+    toe: { part: "Toe", group: "Distances", items: ["3K Fun Run", "5K Run", "10K Challenge"], primary: [0, 1, 2] },
+    laces: { part: "Laces", group: "Race Kit", items: ["Official Singlet", "Race Bib", "Timing Chip", "Drawstring Bag"], primary: [0, 1] },
+    upper: { part: "Upper", group: "Finish Line", items: ["Finisher Medal", "E-Certificate", "Race Photos", "Loot Bag"], primary: [0] },
+    heel: { part: "Heel", group: "Support", items: ["Hydration Stations", "Route Marshals", "Medics on Course", "Bag Drop"], primary: [0, 2] },
+    midsole: { part: "Midsole", group: "Tech", items: ["Chip Timing", "Live Results", "Photo Search", "Race-Day Updates"], primary: [0, 1] },
+    outsole: { part: "Outsole", group: "Route", items: ["Start Arch", "KM Markers", "Water Points", "Finish Arch"], primary: [0, 3] },
   },
-  projects: [
-    { name: "Project One", category: "AI · C#", field: "ink", url: "https://example.com" },
-    { name: "Project Two", category: "AI · Rust", field: "red", url: "https://example.com" },
-    { name: "Project Three", category: "AI · LLM", field: "bone", url: "https://example.com" },
-    { name: "Project Four", category: "AI · RAG", field: "ink", url: "https://example.com" },
-    { name: "Project Five", category: "Mobile · Kotlin", field: "red", url: "https://example.com" },
-    { name: "Project Six", category: "Automation · Java", field: "bone", url: "https://example.com" },
-    { name: "Project Seven", category: "Mobile · Kotlin", field: "ink", url: "https://example.com" },
-    { name: "Project Eight", category: "Web · Next.js", field: "red", url: "https://example.com" },
+  // race-day highlights (scene: belt of cards); img is a key of assets.photos or a full path
+  highlights: [
+    { name: "Chip-Timed Results", category: "Tech · Live", field: "ink", img: "computer", url: mail("TechRun 2027 · Results") },
+    { name: "Pixel Photo Wall", category: "Expo · Booth", field: "lime", img: "paintGuy", url: mail("TechRun 2027 · Photo wall") },
+    { name: "Retro Race Village", category: "Expo · Y2K", field: "paper", img: "tv", url: mail("TechRun 2027 · Race village") },
+    { name: "Run Club Pacers", category: "Community", field: "cyan", img: "runners", url: mail("TechRun 2027 · Pacers") },
+    { name: "Finisher Medal", category: "Finish · Loot", field: "orange", img: "assets/img/trophy.png", url: mail("TechRun 2027 · Finisher medal") },
+    { name: "Hydration Stations", category: "Support", field: "ink", img: "hills", url: mail("TechRun 2027 · Hydration") },
+    { name: "Code & Cardio", category: "Talks · Tech", field: "lime", img: "matrix", url: mail("TechRun 2027 · Talks") },
+    { name: "Afterparty Stage", category: "Music · Night", field: "paper", img: "crew", url: mail("TechRun 2027 · Afterparty") },
   ],
-  // two showcase frames (scenes 21 and 22)
+  // two showcase frames
   showcases: [
     {
-      field: "bone", title: ["Project", "Five"], accent: "Five", ghost: "5",
-      pitch: "A one-line pitch for this mobile project", strikes: ["Noise", "Friction", "Telemetry"],
-      stack: "Kotlin · Compose · Firebase", badge: { big: "WIN", small: "Featured" },
-      links: [["Source code", "https://example.com"], ["View post", "https://example.com"]],
+      field: "paper", title: ["Official", "Singlets"], accent: "Singlets", ghost: "S",
+      pitch: "Breathable race singlets in the full TechRun gradient", strikes: ["Front", "Back", "Side"],
+      stack: "Sample categories · Registration TBA", badge: { big: "KIT", small: "Race Kit 2027" },
+      img: "singlets", runner: "hoodie",
+      links: [["Ask about kits", mail("TechRun 2027 · Race kit")]],
     },
     {
-      field: "ink", title: ["Project", "Seven"], accent: "Seven", ghost: "7",
-      pitch: "A one-line pitch · replaces the manual process", features: ["Scan", "Sync", "Offline"],
-      stack: "Kotlin · Firebase · RFID · Android", badge: { big: "2nd", small: "Competition 2025" },
-      links: [["View post", "https://example.com"]],
+      field: "ink", title: ["Race", "Bibs"], accent: "Bibs", ghost: "#",
+      pitch: "Chip-timed bibs for every distance", features: ["3K", "5K", "10K"],
+      stack: "30001 · 50001 · 10001 · Registration TBA", badge: { big: "TBA", small: "Date & venue" },
+      img: "bibs", runner: "cap",
+      links: [["Get race updates", mail("TechRun 2027 · Race updates")]],
     },
   ],
-  certs: [
-    { title: "CS50 AI with Python", issuer: "Harvard", url: "https://example.com" },
-    { title: "Gen AI Fundamentals", issuer: "Databricks", url: "https://example.com" },
-    { title: "Agents Course", issuer: "Hugging Face", url: "https://example.com" },
-    { title: "AI Agents Fundamentals", issuer: "Hugging Face", url: "https://example.com" },
+  // partner slots (scene: partners grid)
+  partners: [
+    { title: "GN Club", issuer: "Organizer", url: mail("TechRun 2027 · GN Club") },
+    { title: "Your Brand Here", issuer: "Title partner", url: mail("TechRun 2027 · Title partnership") },
+    { title: "Your Brand Here", issuer: "Tech partner", url: mail("TechRun 2027 · Tech partnership") },
+    { title: "Your Brand Here", issuer: "Community partner", url: mail("TechRun 2027 · Community partnership") },
   ],
   contact: {
-    headline: "LET'S TALK",
+    headline: "LET'S RUN",
     links: [
-      { label: "Email", value: "hello@example.com", url: "mailto:hello@example.com" },
-      { label: "LinkedIn", value: "your-handle", url: "https://linkedin.com/in/your-handle" },
-      { label: "GitHub", value: "your-handle", url: "https://github.com/your-handle" },
-      { label: "Facebook", value: "Your Name", url: "https://facebook.com/your-handle" },
-      { label: "Resume", value: "PDF · 2026", url: "resume/resume.pdf" },
+      { label: "Email", value: EMAIL, url: `mailto:${EMAIL}` },
+      { label: "Register", value: "Registration TBA", url: mail("TechRun 2027 · Notify me when registration opens") },
+      { label: "Partner", value: "Sponsor the run", url: mail("TechRun 2027 · Partnership") },
+      { label: "Volunteer", value: "Join the crew", url: mail("TechRun 2027 · Volunteer") },
     ],
+    footer: "© 2027 TechRun · A GN Club event · Move people for a brighter tomorrow",
   },
 };

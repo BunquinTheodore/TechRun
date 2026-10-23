@@ -2,6 +2,7 @@
 import { CONTENT as C } from "./content.js";
 import { buildAll } from "./scenes/index.js";
 import { IDLE_POSE, makePoser, clamp, esc } from "./scenes/util.js";
+import { FIELD_BG, LIGHT_FIELDS, rgba } from "./palette.js";
 
 const SCENE_PX = 850;          // scroll px for a 2.5s scene; others scale with duration (clamped)
 const HOLD_PX = 800;           // extra scroll a resting frame stays put for
@@ -10,8 +11,7 @@ const IRIS_SIZE = 4500;        // iris circle diameter, stage px
 const BOOT_GATE = ["biometric-scan", 2.3];
 const LANDING = ["name", 1.5];
 const GUN_SAFETY_MS = 15000;   // never leave the boot stuck at 97%
-const COLOR = { ink: "#050505", red: "#ff0f0f", bone: "#ededed", quad: "#050505" };
-const LIGHT_FIELDS = new Set(["red", "bone"]);
+const COLOR = FIELD_BG;
 const REST_SLUG = "loaded-rest";
 
 const $ = (id) => document.getElementById(id);
@@ -189,7 +189,7 @@ function drawStars() {
     if (p.x < -4 || p.x > w + 4 || p.y < -4 || p.y > h + 4) Object.assign(p, makeStar(true), { a: 0 });
     starCtx.beginPath();
     starCtx.arc(p.x + p.tx, p.y + p.ty, p.r, 0, Math.PI * 2);
-    starCtx.fillStyle = `rgba(237,237,237,${p.a.toFixed(3)})`;
+    starCtx.fillStyle = rgba("paper", p.a.toFixed(3));
     starCtx.fill();
   }
 }
@@ -431,7 +431,7 @@ window.__shots = scenes;
 // ---------- boot ----------
 async function loadGun() {
   try {
-    const { mountGun } = await import("./gun.js");
+    const { mountGun } = await import("./shoe.js");
     gunReal = await mountGun(gunCanvas, state, { pixelRatio: gunPixelRatio(), interactive: !coarse });
     gunReal?.setVisible(!!active?.gun);
   } catch (e) {
