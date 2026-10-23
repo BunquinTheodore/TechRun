@@ -3,7 +3,7 @@ import { pad, q, qa, esc, decode, count } from "./util.js";
 
 const hash = (n) => { const x = Math.sin(n * 127.1 + 311.7) * 43758.5453; return x - Math.floor(x); };
 
-// ---------- 01 fingerprint ----------
+// ---------- 01 runner check-in: fingerprint scan ----------
 const FP_RINGS = 24;
 function fingerprintPaths() {
   const cx = 280, cy = 350, out = [];
@@ -26,51 +26,56 @@ function fingerprintPaths() {
 
 const SCAN_TOP = 190, SCAN_H = 660;
 
-function biometricHtml() {
+function biometricHtml(C) {
   const paths = fingerprintPaths();
   const brk = (l, t, bw) => `<i class="bs-br" style="left:${l}px;top:${t}px;border-width:${bw}"></i>`;
+  const S = '.scene[data-slug="biometric-scan"]';
   return `
 <style>
-  .bs-br { position:absolute; width:64px; height:64px; border:0 solid var(--bone); opacity:.75; }
-  .bs-mono { position:absolute; font:600 20px/1.5 var(--mono); letter-spacing:.22em; text-transform:uppercase; color:var(--ash); white-space:nowrap; }
-  .bs-mono b { color:var(--bone); font-weight:700; }
-  .bs-ticks { position:absolute; width:26px; height:660px; top:${SCAN_TOP}px;
-    background:repeating-linear-gradient(to bottom, rgba(237,237,237,.38) 0 2px, transparent 2px 14px); transform-origin:50% 0; }
-  .bs-fp path { fill:none; stroke-width:3; stroke-linecap:butt; }
-  .bs-st { position:absolute; left:0; top:0; white-space:nowrap; }
+  ${S} .bs-br { position:absolute; width:64px; height:64px; border:0 solid var(--paper); opacity:.75; }
+  ${S} .bs-mono { position:absolute; font:600 20px/1.5 var(--mono); letter-spacing:.22em; text-transform:uppercase; color:var(--ash); white-space:nowrap; }
+  ${S} .bs-mono b { color:var(--paper); font-weight:700; }
+  ${S} .bs-ticks { position:absolute; width:26px; height:${SCAN_H}px; top:${SCAN_TOP}px;
+    background:repeating-linear-gradient(to bottom, rgba(var(--paper-rgb),.38) 0 2px, transparent 2px 14px); transform-origin:50% 0; }
+  ${S} .bs-fp path { fill:none; stroke-width:3; stroke-linecap:butt; }
+  ${S} .bs-st { position:absolute; top:0; right:0; white-space:nowrap; }
+  ${S} .bs-px { position:absolute; width:18px; height:18px; }
 </style>
-<div class="eyebrow abs bs-eye" style="left:130px;top:128px">Biometric scan</div>
-<div class="bs-mono abs bs-l1" style="left:130px;top:186px">Subject <b>001</b><br>Dermal ridge map<br>Sensor 500 dpi</div>
-<div class="bs-mono abs bs-r1" style="right:130px;top:128px;text-align:right">Channel <b>01 / 05</b><br>Link <b>encrypted</b></div>
+<div class="eyebrow abs bs-eye" style="left:130px;top:128px">Runner check-in</div>
+<div class="bs-mono abs bs-l1" style="left:130px;top:186px">Runner ID <b>001</b><br>${esc(C.brand.title)}<br>Sensor 500 dpi</div>
+<div class="bs-mono abs bs-r1" style="right:130px;top:128px;text-align:right">Check-in <b>01 / 05</b><br>Timing chip <b>linked</b></div>
 
 <div class="bs-ticks bs-t" style="left:620px"></div>
 <div class="bs-ticks bs-t" style="left:1274px"></div>
 ${brk(640, 150, "3px 0 0 3px")}${brk(1216, 150, "3px 3px 0 0")}${brk(640, 866, "0 0 3px 3px")}${brk(1216, 866, "0 3px 3px 0")}
+<i class="bs-px" style="left:1238px;top:150px;background:var(--cyan)"></i>
+<i class="bs-px" style="left:1256px;top:168px;background:var(--lime)"></i>
+<i class="bs-px" style="left:662px;top:894px;background:var(--orange)"></i>
 
-<svg class="abs bs-fp" style="left:680px;top:${SCAN_TOP}px;filter:drop-shadow(0 0 7px rgba(255,15,15,.55))" width="560" height="700" viewBox="0 0 560 700">
+<svg class="abs bs-fp" style="left:680px;top:${SCAN_TOP}px;filter:drop-shadow(0 0 7px rgba(var(--lime-rgb),.55))" width="560" height="700" viewBox="0 0 560 700">
   <defs>
     <clipPath id="bsFpShape"><ellipse cx="280" cy="350" rx="272" ry="338"/></clipPath>
     <clipPath id="bsClip"><rect class="bs-clip" x="0" y="0" width="560" height="0"/></clipPath>
   </defs>
   <g clip-path="url(#bsFpShape)">
-    <g class="fpb" stroke="rgba(237,237,237,.26)">${paths}</g>
-    <g clip-path="url(#bsClip)"><g class="fpr" stroke="#ff0f0f">${paths}</g></g>
+    <g class="fpb" style="stroke:rgba(var(--paper-rgb),.26)">${paths}</g>
+    <g clip-path="url(#bsClip)"><g class="fpr" style="stroke:var(--lime)">${paths}</g></g>
   </g>
 </svg>
 <div class="scanline bs-scan" style="top:${SCAN_TOP}px"></div>
 
-<div class="abs bs-num" style="left:130px;top:760px;display:flex;align-items:flex-end;gap:14px">
-  <div class="mono" style="position:absolute;left:0;top:-42px;font-size:18px;color:var(--ash);white-space:nowrap">Match probability</div>
-  <span class="bs-val" style="font:900 170px/.82 var(--sans);letter-spacing:-.05em">00</span>
-  <span style="font:900 64px/.9 var(--sans);color:var(--red)">%</span>
+<div class="abs bs-num" style="left:130px;top:740px;display:flex;align-items:flex-end;gap:14px">
+  <div class="mono" style="position:absolute;left:0;top:-40px;font-size:18px;color:var(--ash);white-space:nowrap">Check-in progress</div>
+  <span class="pixel bs-val" style="font-size:190px;line-height:.82">00</span>
+  <span class="pixel" style="font-size:72px;line-height:.9;color:var(--lime)">%</span>
 </div>
 
 <div class="bs-mono abs bs-r2" style="right:130px;top:690px;text-align:right;line-height:1.9">
-  Ridges <b>mapped</b><br>
-  Minutiae <b class="bs-min">000</b><br>
+  Stride <b>mapped</b><br>
+  Ridges <b class="bs-min">000</b><br>
   <span style="position:relative;display:inline-block;min-width:330px;height:38px">
-    <span class="bs-st bs-s1" style="right:0;left:auto">Status <b style="color:var(--red)">scanning</b></span>
-    <span class="bs-st bs-s2" style="right:0;left:auto">Status <b style="color:var(--red)">verified</b></span>
+    <span class="bs-st bs-s1">Status <b style="color:var(--lime)">scanning</b></span>
+    <span class="bs-st bs-s2">Status <b style="color:var(--lime)">cleared</b></span>
   </span>
 </div>`;
 }
@@ -83,11 +88,12 @@ function biometricAnim(root, tl) {
 
   tl.from(qa(root, ".bs-eye, .bs-l1, .bs-r1"), { opacity: 0, x: -24, duration: 0.5, ease: "power3.out", stagger: 0.08 }, 0.05);
   tl.from(qa(root, ".bs-br"), { opacity: 0, scale: 1.4, duration: 0.5, ease: "power3.out", stagger: 0.05 }, 0.05);
+  tl.from(qa(root, ".bs-px"), { scale: 0, duration: 0.25, ease: "steps(3)", stagger: 0.12 }, 0.3);
   tl.from(qa(root, ".bs-t"), { scaleY: 0, duration: 0.7, ease: "power3.out" }, 0.15);
   tl.from(qa(root, ".fpb path"), { strokeDashoffset: 1, duration: 0.9, ease: "power2.out", stagger: 0.035 }, 0.1);
   tl.from(qa(root, ".fpr path"), { strokeDashoffset: 1, duration: 0.9, ease: "power2.out", stagger: 0.035 }, 0.1);
 
-  // scan sweep: red reveal clip and the scanline travel together
+  // scan sweep: lime reveal clip and the scanline travel together
   tl.fromTo(rect, { attr: { height: 0 } }, { attr: { height: SCAN_H }, duration: 2, ease: "power1.inOut", immediateRender: false }, 0.3);
   tl.fromTo(scan, { y: 0 }, { y: SCAN_H, duration: 2, ease: "power1.inOut" }, 0.3);
   tl.fromTo(scan, { opacity: 0 }, { opacity: 1, duration: 0.15, ease: "none" }, 0.3);
@@ -102,30 +108,32 @@ function biometricAnim(root, tl) {
   tl.fromTo(q(root, ".bs-s1"), { opacity: 1 }, { opacity: 0, duration: 0.01, immediateRender: false }, 2.0);
 }
 
-// ---------- 02 / 03 shared "ACCESS GRANTED" block ----------
-function accessBlock(p) {
-  const br = (l, t, bw) => `<i class="${p}br" style="position:absolute;left:${l}px;top:${t}px;width:64px;height:64px;border:0 solid var(--red);border-width:${bw}"></i>`;
+// ---------- 02 / 03 shared "READY / SET." block ----------
+const READY = "READY", SET = "SET.";
+function readyBlock(p) {
+  const br = (l, t, bw) => `<i class="${p}br" style="position:absolute;left:${l}px;top:${t}px;width:64px;height:64px;border:0 solid var(--lime);border-width:${bw}"></i>`;
+  const line = "position:absolute;left:0;width:1920px;text-align:center;white-space:nowrap;font-size:250px;line-height:.82";
   return `
 <div class="${p}grp" style="position:absolute;inset:0;transform-origin:960px 540px">
   ${br(200, 220, "4px 0 0 4px")}${br(1656, 220, "4px 4px 0 0")}${br(200, 836, "0 0 4px 4px")}${br(1656, 836, "0 4px 4px 0")}
-  <div class="eyebrow ${p}eye" style="position:absolute;left:0;width:1920px;justify-content:center;top:262px">Identity confirmed</div>
-  <div class="mega ${p}l1" style="position:absolute;left:0;width:1920px;text-align:center;top:330px;font-size:236px">ACCESS</div>
-  <div class="mega ${p}l2" style="position:absolute;left:0;width:1920px;text-align:center;top:538px;font-size:236px;color:var(--red)">GRANTED</div>
-  <div class="${p}bar" style="position:absolute;left:660px;width:600px;top:800px;height:4px;background:var(--red);box-shadow:0 0 18px var(--red);transform-origin:0 50%"></div>
-  <div class="mono ${p}foot" style="position:absolute;left:0;width:1920px;text-align:center;top:836px;font-size:18px;color:var(--ash)">Clearance level 04 &nbsp;·&nbsp; session open</div>
-  <i class="${p}line" style="position:absolute;left:160px;width:1600px;top:539px;height:3px;background:var(--red);box-shadow:0 0 22px var(--red),0 0 50px var(--red);opacity:0"></i>
+  <div class="eyebrow ${p}eye" style="position:absolute;left:0;width:1920px;justify-content:center;top:262px">Runner cleared</div>
+  <div class="pixel ${p}l1" style="${line};top:334px">${READY}</div>
+  <div class="pixel ${p}l2" style="${line};top:540px;color:var(--lime)">${SET}</div>
+  <div class="grad-bg ${p}bar" style="position:absolute;left:660px;width:600px;top:800px;height:6px;transform-origin:0 50%"></div>
+  <div class="mono ${p}foot" style="position:absolute;left:0;width:1920px;text-align:center;top:836px;font-size:18px;color:var(--ash)">Check-in complete &nbsp;·&nbsp; start line open</div>
+  <i class="${p}line" style="position:absolute;left:160px;width:1600px;top:539px;height:3px;background:var(--lime);box-shadow:0 0 22px var(--lime),0 0 50px var(--lime);opacity:0"></i>
 </div>`;
 }
 
 function accessHtml() {
-  return accessBlock("ag-") + `<div class="ag-flash" style="position:absolute;inset:0;background:var(--red);opacity:0;z-index:9"></div>`;
+  return readyBlock("ag-") + `<div class="ag-flash" style="position:absolute;inset:0;background:var(--lime);opacity:0;z-index:9"></div>`;
 }
 
 function accessAnim(root, tl) {
   tl.fromTo(q(root, ".ag-flash"), { opacity: 0.5 }, { opacity: 0, duration: 0.35, ease: "power2.out" }, 0);
   tl.from(qa(root, ".ag-br"), { opacity: 0, scale: 1.8, duration: 0.45, ease: "power4.out", transformOrigin: "50% 50%" }, 0);
   const eye = q(root, ".ag-eye"), l1 = q(root, ".ag-l1"), l2 = q(root, ".ag-l2");
-  for (const [el, t, at, dur] of [[eye, "IDENTITY CONFIRMED", 0.05, 0.45], [l1, "ACCESS", 0.1, 0.45], [l2, "GRANTED", 0.3, 0.5]]) {
+  for (const [el, t, at, dur] of [[eye, "RUNNER CLEARED", 0.05, 0.45], [l1, READY, 0.1, 0.45], [l2, SET, 0.3, 0.5]]) {
     tl.fromTo(el, { opacity: 0 }, { opacity: 1, duration: 0.01 }, at);
     decode(tl, el, t, at, dur);
   }
@@ -134,13 +142,13 @@ function accessAnim(root, tl) {
 }
 
 function collapseHtml() {
-  return accessBlock("cd-") + `
-<i class="cd-r1" style="position:absolute;left:918px;top:498px;width:84px;height:84px;border-radius:50%;border:2px solid var(--red)"></i>
-<i class="cd-r2" style="position:absolute;left:918px;top:498px;width:84px;height:84px;border-radius:50%;border:2px solid var(--bone)"></i>
-<i class="cd-hx" style="position:absolute;left:760px;width:400px;top:539px;height:1px;background:rgba(237,237,237,.45)"></i>
-<i class="cd-vx" style="position:absolute;top:340px;height:400px;left:959px;width:1px;background:rgba(237,237,237,.45)"></i>
-<i class="cd-dot" style="position:absolute;left:948px;top:528px;width:24px;height:24px;border-radius:50%;background:var(--red);box-shadow:0 0 27px var(--red),0 0 70px rgba(255,15,15,.65);z-index:12"></i>
-<div class="mono cd-cap" style="position:absolute;left:0;width:1920px;text-align:center;top:630px;font-size:18px;color:var(--ash)">Origin &nbsp;·&nbsp; 0,0</div>`;
+  return readyBlock("cd-") + `
+<i class="cd-r1" style="position:absolute;left:918px;top:498px;width:84px;height:84px;border-radius:50%;border:2px solid var(--lime)"></i>
+<i class="cd-r2" style="position:absolute;left:918px;top:498px;width:84px;height:84px;border-radius:50%;border:2px solid var(--cyan)"></i>
+<i class="cd-hx" style="position:absolute;left:760px;width:400px;top:539px;height:1px;background:rgba(var(--paper-rgb),.45)"></i>
+<i class="cd-vx" style="position:absolute;top:340px;height:400px;left:959px;width:1px;background:rgba(var(--paper-rgb),.45)"></i>
+<i class="cd-dot" style="position:absolute;left:948px;top:528px;width:24px;height:24px;border-radius:50%;background:var(--lime);box-shadow:0 0 27px var(--lime),0 0 70px rgba(var(--lime-rgb),.65);z-index:12"></i>
+<div class="mono cd-cap" style="position:absolute;left:0;width:1920px;text-align:center;top:630px;font-size:18px;color:var(--ash)">Start line &nbsp;·&nbsp; KM 0</div>`;
 }
 
 function collapseAnim(root, tl) {
@@ -162,74 +170,101 @@ function collapseAnim(root, tl) {
   tl.from(q(root, ".cd-cap"), { opacity: 0, y: 12, duration: 0.4, ease: "power3.out" }, 1.25);
 }
 
-// ---------- 04 name ----------
-const NAME_FS = 290;
+// ---------- 04 name (hero on lime) ----------
+const NAME_FS = 300;      // TECH / RUN (Tektur 900 condensed)
+const YEAR_FS = 232;      // 2027 (Tiny5), sized to sit under TECH
+const PERIOD_EM = 0.2;    // full stop, relative to YEAR_FS
+// pixel bits around the runner's feet (stage px, size, colour token)
+const PIXELS = [
+  [1086, 520, 34, "ink"], [1046, 566, 22, "cyan"], [1130, 596, 18, "orange"], [990, 520, 14, "ink"],
+  [1700, 590, 30, "ink"], [1752, 548, 20, "orange"], [1650, 640, 16, "cyan"], [1790, 640, 14, "ink"],
+  [1380, 640, 22, "ink"], [1420, 604, 14, "cyan"],
+];
 
 function nameHtml(C) {
-  const p = C.person, L = p.lines;
-  const fs = `font-size:${NAME_FS}px`;
+  const B = C.brand, L = B.lines, A = C.assets, O = C.organizer;
+  const S = '.scene[data-slug="name"]';
+  const px = PIXELS.map(([x, y, s, c]) => `<i class="nm-px" style="left:${x}px;top:${y}px;width:${s}px;height:${s}px;background:var(--${c})"></i>`).join("");
   return `
 <style>
-  .nm-meta { position:absolute; font:600 20px/1.6 var(--mono); letter-spacing:.22em; text-transform:uppercase; color:var(--ink); white-space:nowrap; }
-  .nm-row { display:flex; }
-  .nm-pw { position:relative; display:inline-block; width:.16em; height:.16em; margin-left:.05em; margin-bottom:.07em; align-self:flex-end; }
-  .nm-pw .iris { width:3400px; height:3400px; background:var(--ink); z-index:30; margin:0; }
+  ${S} .nm-meta { position:absolute; font:600 20px/1.6 var(--mono); letter-spacing:.22em; text-transform:uppercase; color:var(--ink); white-space:nowrap; }
+  ${S} .nm-tech { font-size:${NAME_FS}px; line-height:.84; }
+  ${S} .nm-year { font-size:${YEAR_FS}px; line-height:.8; letter-spacing:.06em; margin-left:-.02em; }
+  ${S} .nm-row { display:flex; align-items:flex-end; }
+  ${S} .nm-pw { position:relative; display:inline-block; width:${PERIOD_EM}em; height:${PERIOD_EM}em; margin-left:.02em; margin-bottom:.02em; font-size:${YEAR_FS}px; }
+  ${S} .nm-pw .iris { width:3400px; height:3400px; background:var(--ink); z-index:30; margin:0; border-radius:0; }
+  ${S} .nm-px { position:absolute; z-index:3; }
+  ${S} .nm-legs { position:absolute; left:880px; top:-70px; width:1120px; height:auto; z-index:2; mix-blend-mode:multiply; }
 </style>
-<div class="nm-meta nm-top" style="left:130px;top:104px">Portfolio &nbsp;/&nbsp; 2026</div>
-<div class="nm-meta nm-top" style="right:130px;top:104px;text-align:right">N&deg; 001 &nbsp;/&nbsp; Hero</div>
-<i class="nm-rule" style="position:absolute;left:130px;width:1660px;top:150px;height:3px;background:var(--ink);transform-origin:0 50%"></i>
+<img class="nm-mark" src="${esc(A.markSolid)}" alt="" style="position:absolute;left:112px;top:78px;width:96px;height:96px">
+<div class="nm-meta nm-top" style="left:214px;top:110px">${esc(O.label)} ${esc(B.org)}</div>
+<i class="nm-rule" style="position:absolute;left:130px;width:760px;top:166px;height:3px;background:var(--ink);transform-origin:0 50%"></i>
 
-<div class="nm-block" style="position:absolute;left:130px;top:196px;z-index:5;transform-origin:0 100%">
-  <h1 class="mega nm-l" style="margin:0;${fs};line-height:.84"><span class="mask nm-m"><span>${esc(L[0])}</span></span></h1>
-  <div class="nm-row" style="align-items:center;gap:76px">
-    <div class="mega nm-l" style="${fs};line-height:.84"><span class="mask nm-m"><span>${esc(L[1])}</span></span></div>
-    <div class="nm-title" style="margin-top:6px">
-      <div class="eyebrow ink">${esc(p.title)}</div>
-      <p style="margin:26px 0 0;font:600 34px/1.3 var(--sans);max-width:860px;color:var(--ink)">${esc(p.tagline)}</p>
-    </div>
-  </div>
-  <div class="nm-row" style="${fs};line-height:.84">
-    <div class="mega nm-l" style="${fs};line-height:.84"><span class="mask nm-m"><span>${esc(L[2])}</span></span></div>
+<img class="nm-legs" data-bleed src="${esc(A.runnerLegs)}" alt="">
+${px}
+
+<div class="nm-block" style="position:absolute;left:130px;top:212px;z-index:5;transform-origin:0 100%">
+  <div class="mega nm-tech"><span class="mask nm-m"><span>${esc(L[0])}</span></span></div>
+  <div class="mega nm-tech"><span class="mask nm-m"><span>${esc(L[1])}</span></span></div>
+  <div class="nm-row" style="margin-top:22px">
+    <div class="pixel nm-year"><span class="mask nm-m"><span>${esc(L[2])}</span></span></div>
     <span class="nm-pw"><i class="iris nm-iris" style="left:50%;top:50%"></i></span>
   </div>
 </div>
 
-<div class="nm-meta nm-bot" style="right:130px;top:900px;text-align:right">Based in ${esc(C.location.city)}, ${esc(C.location.country)}<br>${esc(C.location.tzLabel)}</div>`;
+<div class="nm-title" style="position:absolute;left:1120px;top:716px;width:690px;z-index:4">
+  <div class="eyebrow">${esc(O.line)}</div>
+  <p style="margin:24px 0 0;font:600 40px/1.18 var(--sans);color:var(--ink)">${esc(B.tagline)}</p>
+</div>
+<div class="nm-meta nm-bot" style="left:1120px;top:926px">${esc(C.location.city)}, ${esc(C.location.country)} &nbsp;·&nbsp; ${esc(O.date)}</div>`;
 }
 
 function nameAnim(root, tl) {
-  const fsW = (NAME_FS * 0.16) / 3400; // iris scale that matches a full stop
+  const fsW = (YEAR_FS * PERIOD_EM) / 3400; // iris scale that matches the full stop
   const iris = q(root, ".nm-iris");
   tl.set(iris, { xPercent: -50, yPercent: -50 }, 0);
   tl.from(q(root, ".nm-rule"), { scaleX: 0, duration: 0.8, ease: "power4.out" }, 0.1);
-  tl.from(qa(root, ".nm-top"), { opacity: 0, y: -14, duration: 0.5, ease: "power3.out", stagger: 0.08 }, 0.15);
+  tl.from(q(root, ".nm-mark"), { opacity: 0, x: -20, duration: 0.5, ease: "power3.out" }, 0.1);
+  tl.from(qa(root, ".nm-top"), { opacity: 0, y: -14, duration: 0.5, ease: "power3.out" }, 0.15);
   tl.from(qa(root, ".nm-m > span"), { yPercent: 118, duration: 0.8, ease: "power4.out", stagger: 0.14 }, 0.0);
+  // runner strides in from the right, pixels pop around the feet
+  tl.from(q(root, ".nm-legs"), { x: 260, opacity: 0, duration: 1.0, ease: "power4.out" }, 0.1);
+  tl.from(qa(root, ".nm-px"), { scale: 0, duration: 0.2, ease: "steps(2)", stagger: 0.04 }, 0.55);
   tl.from(q(root, ".nm-title"), { opacity: 0, x: 40, duration: 0.6, ease: "power3.out" }, 0.55);
   tl.from(q(root, ".nm-bot"), { opacity: 0, y: 16, duration: 0.5, ease: "power3.out" }, 0.75);
   // full stop pops in, then (post rest) swells to flood the frame in ink
   tl.fromTo(iris, { scale: 0 }, { scale: fsW, duration: 0.35, ease: "back.out(3)" }, 0.9);
   tl.fromTo(q(root, ".nm-block"), { scale: 1 }, { scale: 1.035, duration: 1.0, ease: "sine.inOut", immediateRender: false }, 1.55);
+  tl.fromTo(q(root, ".nm-legs"), { x: 0 }, { x: -60, duration: 1.4, ease: "sine.inOut", immediateRender: false }, 1.55);
   tl.fromTo(iris, { scale: fsW }, { scale: 1, duration: 0.85, ease: "power3.in", immediateRender: false }, 2.5);
 }
 
 // ---------- 05 word burst ----------
 const CELLS = [
-  { x: 0, y: 0, bg: "var(--red)", fg: "var(--ink)", dot: "var(--ink)", org: "100% 100%" },
-  { x: 960, y: 0, bg: "var(--bone)", fg: "var(--ink)", dot: "var(--red)", org: "0% 100%" },
-  { x: 0, y: 540, bg: "var(--blood)", fg: "var(--bone)", dot: "var(--red)", org: "100% 0%" },
-  { x: 960, y: 540, bg: "#0b0b0b", fg: "var(--bone)", dot: "var(--red)", org: "0% 0%", edge: true },
+  { x: 0, y: 0, bg: "var(--cyan)", org: "100% 100%" },
+  { x: 960, y: 0, bg: "var(--lime)", org: "0% 100%" },
+  { x: 0, y: 540, bg: "var(--orange)", org: "100% 0%" },
+  { x: 960, y: 540, bg: "var(--paper)", org: "0% 0%" },
 ];
 
+// Tektur 900 @75% runs ~0.62em per glyph; keep the longest word (plus its
+// square stop) inside the 780px live area of a 960px cell (90px margins).
+const WB_MAX_FS = 164, WB_LIVE_W = 740, WB_GLYPH_EM = 0.62, WB_STOP_EM = 0.2;
+const wordFs = (words) => {
+  const longest = Math.max(...words.map((w) => w.length));
+  return Math.min(WB_MAX_FS, Math.floor(WB_LIVE_W / (WB_GLYPH_EM * longest + WB_STOP_EM)));
+};
+
 function burstHtml(C) {
-  const words = (C.words && C.words.length ? C.words : ["BUILD", "SHIP", "ITERATE", "REPEAT"]).slice(0, 4);
+  const words = C.words.slice(0, 4);
+  const fs = wordFs(words);
   return words.map((w, i) => {
     const c = CELLS[i];
-    const edge = c.edge ? "box-shadow:inset 0 0 0 4px var(--red);" : "";
     return `
-<div class="wb-cell" style="position:absolute;left:${c.x}px;top:${c.y}px;width:960px;height:540px;overflow:hidden;background:${c.bg};color:${c.fg};transform-origin:${c.org};${edge}">
-  <div class="mono" style="position:absolute;left:90px;top:90px;font-size:20px;opacity:.75">${pad(i + 1)} / ${pad(words.length)}</div>
-  <div class="ol" style="position:absolute;right:90px;top:70px;font:900 220px/.8 var(--sans);letter-spacing:-.05em;opacity:.22;-webkit-text-stroke:3px currentColor">${pad(i + 1)}</div>
-  <div class="wb-word" style="position:absolute;left:90px;bottom:86px;font:900 172px/.9 var(--sans);letter-spacing:-.045em;text-transform:uppercase;white-space:nowrap;transform-origin:0 100%">${esc(w)}<i style="display:inline-block;width:.15em;height:.15em;border-radius:50%;background:${c.dot};margin-left:.05em"></i></div>
+<div class="wb-cell" style="position:absolute;left:${c.x}px;top:${c.y}px;width:960px;height:540px;overflow:hidden;background:${c.bg};color:var(--ink);transform-origin:${c.org}">
+  <div class="mono" style="position:absolute;left:90px;top:90px;font-size:20px">${pad(i + 1)} / ${pad(words.length)}</div>
+  <div class="pixel" style="position:absolute;right:90px;top:64px;font-size:200px;line-height:.8;opacity:.16">${pad(i + 1)}</div>
+  <div class="wb-word" style="position:absolute;left:90px;bottom:86px;font:900 ${fs}px/.9 var(--sans);font-stretch:75%;letter-spacing:-.03em;text-transform:uppercase;white-space:nowrap;transform-origin:0 100%">${esc(w)}<i style="display:inline-block;width:.15em;height:.15em;background:var(--ink);margin-left:.05em"></i></div>
 </div>`;
   }).join("");
 }
@@ -246,32 +281,16 @@ function burstAnim(root, tl) {
 }
 
 // ---------- export ----------
-export function scenes(C, P) {
+export function scenes(C) {
+  const base = { stars: false, ammo: 0, turn: null, rest: null, restAt: null, shoe: false };
   return [
+    { ...base, slug: "biometric-scan", name: "Runner check-in", act: "00 · Check-in", field: "ink", dur: 2.4, html: biometricHtml(C), anim: biometricAnim },
+    { ...base, slug: "access-granted", name: "Ready, set", act: "00 · Check-in", field: "ink", dur: 1.2, html: accessHtml(), anim: accessAnim },
+    { ...base, slug: "collapse-to-the-dot", name: "Collapse to the dot", act: "00 · Check-in", field: "ink", dur: 1.8, stars: true, html: collapseHtml(), anim: collapseAnim },
     {
-      slug: "biometric-scan", name: "Biometric scan", act: "00 · Boot", field: "ink", dur: 2.4,
-      stars: false, ammo: 0, turn: null, rest: null, restAt: null, gun: false,
-      html: biometricHtml(), anim: biometricAnim,
+      ...base, slug: "name", name: C.brand.title, act: "01 · TechRun", field: "lime", dur: 3.4,
+      turn: [3.1, "ink"], rest: "scroll to enter", restAt: 1.5, html: nameHtml(C), anim: nameAnim,
     },
-    {
-      slug: "access-granted", name: "Access granted", act: "00 · Boot", field: "ink", dur: 1.2,
-      stars: false, ammo: 0, turn: null, rest: null, restAt: null, gun: false,
-      html: accessHtml(), anim: accessAnim,
-    },
-    {
-      slug: "collapse-to-the-dot", name: "Collapse to the dot", act: "00 · Boot", field: "ink", dur: 1.8,
-      stars: true, ammo: 0, turn: null, rest: null, restAt: null, gun: false,
-      html: collapseHtml(), anim: collapseAnim,
-    },
-    {
-      slug: "name", name: C.person.first + " " + C.person.last, act: "01 · Hero", field: "red", dur: 3.4,
-      stars: false, ammo: 0, turn: [3.1, "ink"], rest: "scroll to enter", restAt: 1.5, gun: false,
-      html: nameHtml(C), anim: nameAnim,
-    },
-    {
-      slug: "word-burst", name: "Word burst", act: "01 · Hero", field: "quad", dur: 2.0,
-      stars: false, ammo: 0, turn: null, rest: null, restAt: null, gun: false,
-      html: burstHtml(C), anim: burstAnim,
-    },
+    { ...base, slug: "word-burst", name: "Word burst", act: "01 · TechRun", field: "quad", dur: 2.0, html: burstHtml(C), anim: burstAnim },
   ];
 }

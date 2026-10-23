@@ -61,7 +61,7 @@ export const CONTENT = {
     { name: "5K", label: "Run", note: "The classic distance", bib: "50001", url: mail("TechRun 2027 · 5K registration") },
     { name: "10K", label: "Challenge", note: "For the ones chasing a PR", bib: "10001", url: mail("TechRun 2027 · 10K registration") },
   ],
-  // one entry per shoe part (gun.js PARTS); `primary` lists item indexes drawn as highlights
+  // one entry per shoe part (shoe.js PARTS); `primary` lists item indexes drawn as highlights
   kit: {
     toe: { part: "Toe", group: "Distances", items: ["3K Fun Run", "5K Run", "10K Challenge"], primary: [0, 1, 2] },
     laces: { part: "Laces", group: "Race Kit", items: ["Official Singlet", "Race Bib", "Timing Chip", "Drawstring Bag"], primary: [0, 1] },

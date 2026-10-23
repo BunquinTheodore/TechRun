@@ -33,7 +33,7 @@ const P = makePoser(state);
 const mouse = { x: innerWidth / 2, y: innerHeight / 2, nx: 0, ny: 0, sx: 0, sy: 0 };
 let clock = 0, gunReal = null, gunReady = false;
 
-// scenes always receive this proxy; it works (returns null) before or without the real gun
+// scenes always receive this proxy; it works (returns null) before or without the real shoe
 const gunApi = {
   project: (part) => (gunReal ? gunReal.project(part) : null),
   pick: (x, y) => (gunReal ? gunReal.pick(x, y) : null),
@@ -158,6 +158,7 @@ function fit() {
   document.body.style.height = `${h + totalPx}px`;
   sizeStars();
   gunReal?.setPixelRatio(gunPixelRatio());
+  measureTrack();
 }
 
 // ---------- stars (screen coordinates, pushed by the cursor) ----------
@@ -211,7 +212,7 @@ addEventListener("pointerout", (e) => {
   if (e.target.closest?.(POINTABLE)) gsap.to(cursorEl, { scale: 1, duration: 0.25, ease: "power3.out", overwrite: "auto" });
 });
 
-// ---------- skills panel + ring (loaded-rest) ----------
+// ---------- kit panel + ring (laced-rest) ----------
 const panel = document.createElement("div"), ring = document.createElement("i");
 panel.id = "skills"; ring.id = "ring";
 panel.setAttribute("role", "status"); panel.setAttribute("aria-live", "polite");
@@ -219,12 +220,15 @@ ring.setAttribute("aria-hidden", "true");
 document.body.appendChild(panel);
 stage.appendChild(ring);
 let hovered = null, active = null;
+const PART_ORDER = Object.keys(C.kit || {});
 
 function panelHtml(part) {
-  const sk = C.skills[part];
-  if (!sk) return "";
-  const items = sk.items.map((it, i) => `<li${sk.primary.includes(i) ? ' class="p"' : ""}>${esc(it)}</li>`).join("");
-  return `<small>Part · ${esc(sk.part)}</small><strong>${esc(sk.group)}</strong><ul>${items}</ul>`;
+  const kit = C.kit?.[part];
+  if (!kit) return "";
+  const n = String(PART_ORDER.indexOf(part) + 1).padStart(2, "0");
+  const items = kit.items.map((it, i) => `<li${kit.primary.includes(i) ? ' class="p"' : ""}>${esc(it)}</li>`).join("");
+  return `<small><span>Part · ${esc(kit.part)}</span><b>${n}/${String(PART_ORDER.length).padStart(2, "0")}</b></small>` +
+    `<strong>${esc(kit.group)}</strong><ul>${items}</ul>`;
 }
 function placePanel(x, y) {
   const w = panel.offsetWidth, h = panel.offsetHeight, M = 12, G = 24;
@@ -309,25 +313,95 @@ function buildAbout() {
     }
     frag.appendChild(ul);
   };
-  const p = C.person;
-  add("h1", `${p.first} ${p.last}`);
-  add("p", `${p.title}. ${p.tagline}`);
-  add("p", `${C.location.city}, ${C.location.country} (${C.location.tzLabel})`);
-  add("h2", "Education");
-  add("p", `${C.education.degree}, ${C.education.school}, ${C.education.place}, ${C.education.years}`);
-  add("h2", "Experience");
-  list(C.work.map((w) => [`${w.role}, ${w.company} (${w.since})`, w.url]));
-  add("h2", "Skills");
-  list(Object.values(C.skills).map((s) => [`${s.group}: ${s.items.join(", ")}`]));
-  add("h2", "Projects");
-  list(C.projects.map((x) => [`${x.name} · ${x.category}`, x.url]));
-  add("h2", "Showcases");
-  list(C.showcases.map((x) => [`${x.title.join(" ")}: ${x.pitch} (${x.stack})`]));
-  add("h2", "Credentials");
-  list(C.certs.map((x) => [`${x.title}, ${x.issuer}`, x.url]));
+  const b = C.brand, o = C.organizer, loc = C.location;
+  add("h1", b.title);
+  add("p", `${o.line}, ${o.label.toLowerCase()} ${o.name}. ${b.tagline}`);
+  add("p", `${loc.city}, ${loc.country} (${loc.tzLabel}). ${loc.venue}. ${o.date}. ${o.edition}.`);
+  add("h2", "Distances");
+  list(C.categories.map((x) => [`${x.name} ${x.label}: ${x.note}`, x.url]));
+  add("h2", "The kit");
+  list(Object.values(C.kit).map((k) => [`${k.part} · ${k.group}: ${k.items.join(", ")}`]));
+  add("h2", "Highlights");
+  list(C.highlights.map((x) => [`${x.name} · ${x.category}`, x.url]));
+  add("h2", "Race kits");
+  list(C.showcases.map((x) => [`${x.title.join(" ")}: ${x.pitch} (${x.stack})`, x.links?.[0]?.[1]]));
+  add("h2", "Partners");
+  list(C.partners.map((x) => [`${x.title}, ${x.issuer}`, x.url]));
   add("h2", "Contact");
   list(C.contact.links.map((l) => [`${l.label}: ${l.value}`, l.url]));
+  add("p", C.contact.footer);
   el.replaceChildren(frag);
+}
+
+// ---------- pixel runner: rides #track along the bottom, positioned by film progress ----------
+const CAST = ["cyber", "hoodie", "cap"];   // acts 00-02, 03-05, 06-08
+const ACTS_PER_RUNNER = 3;
+const RUN_ON = 1300, RUN_OFF = 520;        // smoothed scroll speed (px/s): walk -> run above ON, back below OFF
+const GAIT_HOLD = 0.35;                    // s a gait must be wanted before it switches (no flicker)
+const VEL_RATE = 7;                        // 1/s velocity smoothing
+const FACE_MIN = 160;                      // px/s before the runner turns to face the scroll direction
+const track = document.createElement("div"), trackFill = document.createElement("i"), runner = document.createElement("div");
+track.id = "track"; runner.id = "runner";
+track.appendChild(trackFill);
+const sprites = {};
+for (const who of CAST) {
+  for (const gait of ["walk", "run"]) {
+    const src = C.assets?.runners?.[who]?.[gait];
+    if (!src) continue;
+    const img = new Image();
+    img.alt = ""; img.decoding = "async"; img.draggable = false; img.src = src; // preloads all six
+    runner.appendChild(img);
+    sprites[`${who}-${gait}`] = img;
+  }
+}
+for (const el of [track, runner]) { el.setAttribute("aria-hidden", "true"); document.body.appendChild(el); }
+const rs = { v: 0, lastY: null, gait: "walk", want: "walk", wantFor: 0, face: 1, faceShown: null, key: "", shown: null, x: null, p: null, left: 0, span: 0 };
+
+// the longest act label sets where the track ends, so the runner never reaches #act
+function measureTrack() {
+  const acts = [...new Set(scenes.map((s) => s.act).filter(Boolean))], keep = actEl.textContent;
+  let w = 0;
+  for (const a of acts) { actEl.textContent = a; w = Math.max(w, actEl.offsetWidth); }
+  actEl.textContent = keep;
+  document.documentElement.style.setProperty("--act-w", `${Math.ceil(w)}px`);
+  const r = track.getBoundingClientRect();
+  rs.left = r.left; rs.span = Math.max(0, r.width - runner.offsetWidth);
+  rs.x = rs.p = null;
+}
+const castFor = (act) => {
+  const n = parseInt(act, 10);
+  return CAST[clamp(Math.floor((Number.isFinite(n) ? n : 0) / ACTS_PER_RUNNER), 0, CAST.length - 1)];
+};
+function updateRunner(dt, cueOn) {
+  const s = active;
+  const visible = !!s && !autoplay && !cueOn && s.field !== "quad";
+  if (visible !== rs.shown) { runner.classList.toggle("on", visible); track.classList.toggle("on", visible); rs.shown = visible; }
+  // smoothed scroll velocity (px/s); decays to zero while the film is not under the scroll's control
+  const y = lenis.scroll;
+  const raw = !autoplay && !frozen && rs.lastY != null && dt > 0 ? (y - rs.lastY) / dt : 0;
+  rs.lastY = autoplay || frozen ? null : y;
+  rs.v += (raw - rs.v) * (1 - Math.exp(-dt * VEL_RATE));
+  const speed = Math.abs(rs.v);
+  const want = rs.gait === "walk" ? (speed > RUN_ON ? "run" : "walk") : (speed < RUN_OFF ? "walk" : "run");
+  rs.wantFor = want === rs.want ? rs.wantFor + dt : 0;
+  rs.want = want;
+  if (want !== rs.gait && rs.wantFor >= GAIT_HOLD * (want === "run" ? 0.4 : 1)) rs.gait = want;
+  if (rs.v > FACE_MIN) rs.face = 1; else if (rs.v < -FACE_MIN) rs.face = -1;
+  if (!s) return;
+  const key = `${castFor(s.act)}-${rs.gait}`;
+  if (key !== rs.key && sprites[key]) {
+    sprites[rs.key]?.classList.remove("on");
+    sprites[key].classList.add("on");
+    runner.classList.toggle("run", rs.gait === "run");
+    rs.key = key;
+  }
+  const p = TOTAL_T > 0 ? clamp(t / TOTAL_T) : 0;
+  const x = Math.round(rs.left + p * rs.span);
+  if (x !== rs.x || rs.face !== rs.faceShown) {
+    runner.style.transform = `translate3d(${x}px, 0, 0) scaleX(${rs.face})`;
+    rs.x = x; rs.faceShown = rs.face;
+  }
+  if (Math.abs(p - (rs.p ?? -1)) > 0.0005) { trackFill.style.transform = `scaleX(${p.toFixed(4)})`; rs.p = p; }
 }
 
 // ---------- film time ----------
@@ -362,6 +436,8 @@ function show(time) {
       el.classList.toggle("light", LIGHT_FIELDS.has(f));
       el.classList.toggle("off", s.field === "quad");
     }
+    track.classList.toggle("light", LIGHT_FIELDS.has(f));
+    runner.classList.toggle("light", LIGHT_FIELDS.has(f));
   }
   const wantStars = f === "ink" && !!(s.stars || (s.turn && s.turn[1] === "ink"));
   starsWanted = wantStars;
@@ -406,8 +482,10 @@ function frame(now) {
     lenis.raf(now);
     t = scrollToTime(lenis.scroll);
   }
-  cueEl.classList.toggle("on", !autoplay && !frozen && t < REST_T + 0.15);
+  const cueOn = !autoplay && !frozen && t < REST_T + 0.15;
+  cueEl.classList.toggle("on", cueOn);
   show(t);
+  updateRunner(dt, cueOn);
   drawStars();
   requestAnimationFrame(frame);
 }
@@ -423,7 +501,7 @@ window.__seek = (slug, sec = 0) => {
   if (time == null) return null;
   frozen = true; autoplay = false;
   t = clamp(time, 0, END);
-  show(t); drawStars();
+  show(t); updateRunner(0, false); drawStars();
   return { t, gunReady, shot: active.slug };
 };
 window.__shots = scenes;

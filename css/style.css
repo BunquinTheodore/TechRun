@@ -4,6 +4,7 @@
   --ink-rgb: 0, 0, 0; --paper-rgb: 255, 255, 255; --lime-rgb: 198, 242, 78; --cyan-rgb: 51, 199, 224; --orange-rgb: 242, 184, 78;
   --accent: var(--lime); --accent-rgb: var(--lime-rgb);
   --grad: linear-gradient(90deg, var(--cyan), var(--lime), var(--orange));
+  --hud-e: clamp(16px, 2.1vw, 40px); --track-b: calc(var(--hud-e) + 10px); --rs: 64px;
   --sans: "Tektur", system-ui, sans-serif; --mono: "Tektur", ui-monospace, monospace; --pixel: "Tiny5", "Tektur", monospace;
 }
 * { box-sizing: border-box; }
@@ -49,7 +50,7 @@ body { cursor: none; font-family: var(--sans); color: var(--paper); }
 .mask > span { display: block; }
 .lime .dim, .cyan .dim, .orange .dim { color: rgba(var(--ink-rgb), .58); }
 .ink .dim { color: var(--ash); }
-.paper .dim { color: #666666; }
+.paper .dim { color: rgba(var(--ink-rgb), .6); }
 
 .live { display: inline-block; width: 15px; height: 15px; border-radius: 50%; background: var(--accent);
   box-shadow: 0 0 17px var(--accent); margin-right: 13px; vertical-align: 2px; }
@@ -104,7 +105,7 @@ body { cursor: none; font-family: var(--sans); color: var(--paper); }
   background: var(--ink); animation: cue 1.6s cubic-bezier(.6, 0, .4, 1) infinite; }
 @keyframes cue { 0% { transform: translateY(0); opacity: 0 } 20% { opacity: 1 } 100% { transform: translateY(62px); opacity: 0 } }
 
-/* ---- arsenal hover panel + ring ---- */
+/* ---- kit hover panel + ring ---- */
 #skills { position: fixed; left: 0; top: 0; z-index: 55; pointer-events: none; opacity: 0; visibility: hidden; width: 340px;
   background: rgba(var(--ink-rgb), .92); border: 1.5px solid rgba(var(--paper-rgb), .2); border-left: 3px solid var(--accent);
   padding: 18px 20px; display: grid; gap: 10px; }
@@ -120,7 +121,7 @@ body { cursor: none; font-family: var(--sans); color: var(--paper); }
   box-shadow: 0 0 27px rgba(var(--accent-rgb), .5), inset 0 0 27px rgba(var(--accent-rgb), .3); }
 #ring::after { content: ""; position: absolute; inset: 44%; border-radius: 50%; background: var(--accent); }
 #stage .chip { transition: background-color .2s, border-color .2s, color .2s; cursor: none; }
-#stage .chip.on { background: var(--accent); border-color: var(--accent); color: var(--paper); box-shadow: 0 0 18px rgba(var(--accent-rgb), .55); }
+#stage .chip.on { background: var(--accent); border-color: var(--accent); color: var(--ink); box-shadow: 0 0 18px rgba(var(--accent-rgb), .55); }
 #stage a:focus-visible, #stage .chip:focus-visible { outline: 3px solid var(--accent); outline-offset: 4px; box-shadow: 0 0 0 8px rgba(var(--ink-rgb), .85); }
 
 /* ---- scene pieces ---- */
@@ -131,7 +132,7 @@ body { cursor: none; font-family: var(--sans); color: var(--paper); }
 .tag3 b { display: inline-block; background: var(--ink); color: var(--paper); padding: 8px 10px; margin-right: 12px; }
 .tag3::after { content: ""; position: absolute; left: 0; top: 100%; width: 2px; height: 64px; background: var(--ink); }
 .phone { position: absolute; width: 440px; height: 880px; border-radius: 64px; border: 8px solid var(--ink);
-  background: var(--paper); overflow: hidden; box-shadow: 0 40px 100px rgba(0, 0, 0, .35); }
+  background: var(--paper); overflow: hidden; box-shadow: 0 40px 100px rgba(var(--ink-rgb), .35); }
 .ink .phone { border-color: var(--paper); background: var(--ink); }
 .cert { position: absolute; width: 380px; height: 270px; border: 2px solid var(--paper); padding: 24px; display: grid;
   align-content: space-between; color: var(--paper); text-decoration: none; background: rgba(var(--ink-rgb), .85); }
@@ -158,14 +159,29 @@ body { cursor: none; font-family: var(--sans); color: var(--paper); }
 .win > .bar::after { content: "✕"; width: 22px; height: 20px; display: grid; place-items: center; background: #c3c3c3; color: #000;
   border: 2px solid; border-color: #fff #404040 #404040 #fff; font-size: 12px; }
 .win > .body { position: relative; overflow: hidden; background: #000; }
-/* pixel runner that tracks film progress (main.js) */
-#runner { position: fixed; z-index: 42; left: 0; bottom: calc(clamp(16px, 2.1vw, 40px) - 6px); width: 64px; height: 64px; pointer-events: none;
-  opacity: 0; transition: opacity .4s; image-rendering: pixelated; }
-#runner.on { opacity: 1; }
-#runner img { width: 100%; height: 100%; display: block; image-rendering: pixelated; }
-#track { position: fixed; z-index: 41; left: calc(clamp(16px, 2.1vw, 40px) + 130px); right: calc(clamp(16px, 2.1vw, 40px) + 230px);
-  bottom: calc(clamp(16px, 2.1vw, 40px) + 9px); height: 2px; background: rgba(var(--paper-rgb), .14); pointer-events: none; opacity: 0; transition: opacity .4s; }
-#track i { position: absolute; left: 0; top: 0; bottom: 0; width: 100%; transform-origin: 0 50%; background: var(--grad); }
+/* pixel runner that rides the film-progress track (built by main.js). 64px = 1:1 with the sprite's pixel grid. */
+#track { position: fixed; z-index: 41; pointer-events: none; opacity: 0; transition: opacity .4s;
+  left: calc(var(--hud-e) + 34px + 36px + 44px); right: calc(var(--hud-e) + 34px + var(--act-w, 170px) + 44px);
+  bottom: var(--track-b); height: 2px; background: rgba(var(--paper-rgb), .16); }
+#track::before, #track::after { content: ""; position: absolute; top: -3px; width: 2px; height: 8px; background: currentColor; }
+#track { color: rgba(var(--paper-rgb), .45); }
+#track::before { left: 0; } #track::after { right: 0; }
+#track i { position: absolute; left: 0; top: 0; bottom: 0; width: 100%; transform: scaleX(0); transform-origin: 0 50%;
+  background: var(--grad); box-shadow: 0 0 10px rgba(var(--lime-rgb), .45); }
 #track.on { opacity: 1; }
-#track.light { background: rgba(var(--ink-rgb), .18); }
+#track.light { background: rgba(var(--ink-rgb), .16); color: rgba(var(--ink-rgb), .5); }
+#track.light i { background: var(--ink); box-shadow: none; }
+#runner { position: fixed; z-index: 42; left: 0; width: var(--rs); height: var(--rs); pointer-events: none; opacity: 0;
+  transition: opacity .4s; bottom: calc(var(--track-b) + 2px - var(--rs) * .055); will-change: transform; }
+#runner.on { opacity: 1; }
+#runner img { display: none; width: 100%; height: 100%; image-rendering: pixelated; image-rendering: crisp-edges;
+  filter: drop-shadow(0 0 1px rgba(var(--paper-rgb), .55)) drop-shadow(0 0 8px rgba(var(--lime-rgb), .28)); }
+#runner img.on { display: block; }
+#runner.run img { transform: translateY(calc(var(--rs) * .043)); }
+#runner.light img { filter: none; }
+/* narrow / portrait: the track gets its own row above the pips and the act label */
+@media (max-width: 760px) {
+  :root { --track-b: calc(var(--hud-e) + 50px); }
+  #track { left: calc(var(--hud-e) + 34px); right: calc(var(--hud-e) + 34px); }
+}
 @media (prefers-reduced-motion: reduce) { #runner { display: none; } }

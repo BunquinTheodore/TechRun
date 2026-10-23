@@ -33,13 +33,13 @@ export function count(tl, fn, from, to, at, dur, ease = "none") {
   tl.fromTo(o, { v: from }, { v: to, duration: dur, ease, immediateRender: false, onUpdate: () => fn(o.v) }, at);
 }
 
-// Gun pose tracker. All gun scenes share one poser (made in main.js), built in scene order, so each pose
-// tween starts exactly where the previous one ended.  The FIRST call in every gun scene must use at = 0.
+// Shoe pose tracker. All shoe scenes share one poser (made in main.js), built in scene order, so each pose
+// tween starts exactly where the previous one ended.  The FIRST call in every shoe scene must use at = 0.
 export const IDLE_POSE = { px: 0, py: 0, pz: 0, rx: 0, ry: 0, rz: 0, s: 1, ex: 0 };
 export function makePoser(state) {
   let last = { ...IDLE_POSE, px: -16 };
   return {
-    // tween the gun from wherever the previous call left it to `to` (partial pose ok)
+    // tween the shoe from wherever the previous call left it to `to` (partial pose ok)
     pose(tl, at, dur, to, ease = "power3.inOut") {
       const from = { ...last }, full = { ...last, ...to };
       tl.fromTo(state, from, { ...full, duration: Math.max(dur, 0.001), ease, immediateRender: false }, at);
