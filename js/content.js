@@ -30,6 +30,7 @@ export const CONTENT = {
       halftone: "assets/img/cover-halftone.jpg", // white halftone with wordmark
     },
     runnerLegs: "assets/img/runner-legs.webp", // b/w runner legs cut-out, transparent
+    irunph: "assets/img/irunph-ink.webp",    // iRunPH wordmark in ink, transparent; LIGHT fields (under the hero register button)
     stairs: "assets/img/pixel-stairs.png",   // gradient pixel staircase, transparent
     splash: "assets/img/splash.png",         // gradient paint splash strip, transparent
     trophy: "assets/img/trophy.png",         // pixel trophy, transparent
@@ -81,16 +82,17 @@ export const CONTENT = {
     midsole: { part: "Midsole", group: "Tech", items: ["Chip Timing", "Live Results", "Photo Search", "Race-Day Updates"], primary: [0, 1] },
     outsole: { part: "Outsole", group: "Route", items: ["Start Arch", "KM Markers", "Water Points", "Finish Arch"], primary: [0, 3] },
   },
-  // race-day highlights (scene: belt of cards); img is a key of assets.photos or a full path
+  // race-day highlights (scene: grid of cards); img is a key of assets.photos or a full path.
+  // The photos are 800x280 WebP centre crops of the assets.photos JPGs (the card strip's ratio); trophy is a 241x280 copy.
   highlights: [
-    { name: "Chip-Timed Results", category: "Tech · Live", field: "ink", img: "computer", url: mail("TechRun 2027 · Results") },
-    { name: "Pixel Photo Wall", category: "Expo · Booth", field: "lime", img: "paintGuy", url: mail("TechRun 2027 · Photo wall") },
-    { name: "Retro Race Village", category: "Expo · Y2K", field: "paper", img: "tv", url: mail("TechRun 2027 · Race village") },
-    { name: "Run Club Pacers", category: "Community", field: "cyan", img: "runners", url: mail("TechRun 2027 · Pacers") },
-    { name: "Finisher Medal", category: "Finish · Loot", field: "orange", img: "assets/img/trophy.png", url: mail("TechRun 2027 · Finisher medal") },
-    { name: "Hydration Stations", category: "Support", field: "ink", img: "hills", url: mail("TechRun 2027 · Hydration") },
-    { name: "Code & Cardio", category: "Talks · Tech", field: "lime", img: "matrix", url: mail("TechRun 2027 · Talks") },
-    { name: "Afterparty Stage", category: "Music · Night", field: "paper", img: "crew", url: mail("TechRun 2027 · Afterparty") },
+    { name: "Chip-Timed Results", category: "Tech · Live", field: "ink", img: "assets/img/highlights/retro-computer.webp", url: mail("TechRun 2027 · Results") },
+    { name: "Pixel Photo Wall", category: "Expo · Booth", field: "lime", img: "assets/img/highlights/paint-guy.webp", url: mail("TechRun 2027 · Photo wall") },
+    { name: "Retro Race Village", category: "Expo · Y2K", field: "paper", img: "assets/img/highlights/tv-store.webp", url: mail("TechRun 2027 · Race village") },
+    { name: "Run Club Pacers", category: "Community", field: "cyan", img: "assets/img/highlights/runners-80s.webp", url: mail("TechRun 2027 · Pacers") },
+    { name: "Finisher Medal", category: "Finish · Loot", field: "orange", img: "assets/img/highlights/trophy.webp", sprite: true, url: mail("TechRun 2027 · Finisher medal") },
+    { name: "Hydration Stations", category: "Support", field: "ink", img: "assets/img/highlights/xp-hills.webp", url: mail("TechRun 2027 · Hydration") },
+    { name: "Code & Cardio", category: "Talks · Tech", field: "lime", img: "assets/img/highlights/matrix-kid.webp", url: mail("TechRun 2027 · Talks") },
+    { name: "Afterparty Stage", category: "Music · Night", field: "paper", img: "assets/img/highlights/crew.webp", url: mail("TechRun 2027 · Afterparty") },
   ],
   // two showcase frames
   showcases: [
@@ -105,9 +107,9 @@ export const CONTENT = {
         ["assets/img/bib-5k.webp", "5K race bib 50001"],
         ["assets/img/bib-10k.webp", "10K race bib 10001"],
       ],
-      // after the frame, the poster zooms to fill the screen and this 4s clip scrubs with the scroll (scene kit-zoom).
-      // land: 1280x720 with the clip's edges extended sideways; port: 540x960. Keyframe every 6 frames for seeking.
-      zoom: { land: "assets/video/bib-to-singlet-1280.mp4", port: "assets/video/bib-to-singlet-540.mp4", alt: "Bib to singlet" },
+      // once the frame has built, the poster crossfades into this 4s clip inside its window and the clip scrubs with
+      // the scroll. 1120x552 (the window's ratio) with the clip's edges extended sideways; keyframe every 6 frames.
+      clip: { src: "assets/video/bib-to-singlet-win.mp4", alt: "A race bib turning into the official TechRun singlet" },
       links: [["Ask about kits", mail("TechRun 2027 · Race kit")]],
     },
     {

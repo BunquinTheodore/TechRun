@@ -186,11 +186,11 @@ const PERIOD_EM = 0.2;          // full stop, relative to YEAR_FS
 // type, register block and copy, with the legs striding in at the bottom right beside the copy
 const NM = lay(
   { m: 130, markX: 112, markY: 78, mark: 96, metaX: 214, metaY: 110, metaFs: 20, ruleY: 166, ruleW: 760, blockY: 236,
-    legs: [1000, -70, 1000], ctaX: 750, ctaY: 384, ctaW: 420, chipFs: 40, chipW: 112, regH: 108, regFs: 44, noteFs: 16,
+    legs: [1000, -70, 1000], ctaX: 750, ctaY: 384, ctaW: 420, chipFs: 40, chipW: 112, regH: 108, regFs: 44, noteFs: 16, partnerH: 58,
     titleX: 1240, titleY: 716, titleW: 590, tagFs: 40, botY: 900 },
   { m: 90, markX: 90, markY: 70, mark: 84, metaX: 190, metaY: 98, metaFs: 26, ruleY: 172, ruleW: 900, blockY: 240,
-    legs: [540, 1440, 640], ctaX: 90, ctaY: 1010, ctaW: 900, chipFs: 52, chipW: 170, regH: 132, regFs: 56, noteFs: 24,
-    titleX: 90, titleY: 1450, titleW: 560, tagFs: 44, botY: 1700 },
+    legs: [540, 1440, 640], ctaX: 90, ctaY: 1010, ctaW: 900, chipFs: 52, chipW: 170, regH: 132, regFs: 56, noteFs: 24, partnerH: 60,
+    titleX: 90, titleY: 1540, titleW: 560, tagFs: 44, botY: 1725 },
 );
 const REG_W = lay(420, 640);
 // pixel bits around the runner's feet (stage px for the desktop legs, size, colour token); re-mapped onto the portrait legs
@@ -233,6 +233,7 @@ function nameHtml(C) {
   ${S} a.nm-reg:hover::before, ${S} a.nm-reg:focus-visible::before { opacity:1; }
   ${S} a.nm-reg span, ${S} a.nm-reg svg { position:relative; }
   ${S} .nm-title .eyebrow { font-size:${lay(20, 26)}px; letter-spacing:${lay(".34em", ".26em")}; }
+  ${S} .nm-partner { display:block; height:${NM.partnerH}px; width:auto; margin-top:${lay(6, 10)}px; }
   ${S} .nm-note { margin-top:8px; white-space:nowrap; font:600 ${NM.noteFs}px/1.4 var(--mono); letter-spacing:.2em; text-transform:uppercase; color:rgba(var(--ink-rgb),.72); }
 </style>
 <img class="nm-mark" src="${esc(A.markSolid)}" alt="" width="${NM.mark}" height="${NM.mark}" style="position:absolute;left:${NM.markX}px;top:${NM.markY}px;width:${NM.mark}px;height:${NM.mark}px">
@@ -257,6 +258,7 @@ ${px}
   <a class="nm-reg nm-c" ${linkAttrs(R.url)} aria-label="${esc(R.label)}: ${esc(B.title)}"><span>${esc(R.label)}</span>
     <svg width="34" height="34" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 18 18 6M8 6h10v10" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="square"/></svg></a>
   <div class="nm-note nm-c">${esc(R.note)}</div>
+  <img class="nm-partner nm-c" src="${esc(A.irunph)}" alt="iRunPH" width="439" height="160">
 </div>
 
 <div class="nm-title" style="position:absolute;left:${NM.titleX}px;top:${NM.titleY}px;width:${NM.titleW}px;z-index:4">

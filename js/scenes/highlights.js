@@ -1,12 +1,12 @@
 // Scenes 20-24: highlights-rest, showcase-1, showcase-2, partners-rest, blast.
 import { pad, q, qa, esc, count, linkAttrs } from "./util.js";
 import { PALETTE, GRADIENT_STOPS, LIGHT_FIELDS } from "../palette.js";
-import { PORTRAIT, SW, SH, lay } from "../stage.js";
+import { PORTRAIT, lay } from "../stage.js";
 
 const ACT_HL = "03 · Highlights";
-const ACT_KITS = "03 · Race Kit";
+const ACT_KITS = "04 · Race Kit";
 const ACT_PARTNERS = "07 · Partners";
-const ACT_REGISTER = "04 · Register";
+const ACT_REGISTER = "05 · Register";
 // runner GIF: the feet sit ~8% above the bottom of the 512px frame
 const FEET = 0.9;
 
@@ -32,11 +32,16 @@ ${S} .hl-lab{font-size:26px}` : ""}`;
 function highlightsRest(C) {
   const S = scope("highlights-rest");
   const list = C.highlights, n = list.length;
-  const COLS = 4, GAP = 40, X0 = 100, W = 400, Y0 = 336, YEND = 976;
+  // desktop: header over a 4x2 grid; portrait: stacked header over a 2x4 grid
+  const G = lay(
+    { cols: 4, gap: 40, x: 100, w: 400, y0: 336, yEnd: 976, eb: [100, 96], tag: "right:100px;top:100px", head: [146, 136], rule: [300, 1720] },
+    { cols: 2, gap: 40, x: 90, w: 430, y0: 392, yEnd: 1850, eb: [90, 100], tag: "left:90px;top:150px", head: [206, 112], rule: [350, 900] },
+  );
+  const { cols: COLS, gap: GAP, x: X0, w: W, y0: Y0, yEnd: YEND } = G;
   const rows = Math.ceil(n / COLS), H = Math.floor((YEND - Y0 - GAP * (rows - 1)) / rows);
   const cards = list.map((p, i) => {
     const l = X0 + (i % COLS) * (W + GAP), t = Y0 + Math.floor(i / COLS) * (H + GAP);
-    const src = photoSrc(C, p.img), sprite = isSprite(src);
+    const src = photoSrc(C, p.img), sprite = p.sprite || isSprite(src);
     return `<a class="hl-card f-${esc(p.field || "ink")}" ${linkAttrs(p.url)} aria-label="${esc(p.name)}: ${esc(p.category)}"
         style="left:${l}px;top:${t}px;width:${W}px;height:${H}px">
       <span class="hl-ph${sprite ? " sp" : ""}"><img class="${sprite ? "sprite" : "photo"}" src="${esc(src)}" alt=""></span>
@@ -68,12 +73,18 @@ ${S} .hl-nm{font:900 42px/.95 var(--sans);font-stretch:75%;letter-spacing:-.02em
 ${S} .hl-ar{position:absolute;right:20px;bottom:20px;transition:transform .25s}
 ${S} .hl-card:hover .hl-ar,${S} .hl-card:focus-visible .hl-ar{transform:translate(5px,-5px);color:var(--lime)}
 ${S} .hl-card.f-ink:hover .hl-ar,${S} .hl-card.f-ink:focus-visible .hl-ar{color:var(--ink)}
-${S} .hl-n{font-size:128px;margin-right:.12em}
+${S} .hl-n{font-size:128px;margin-right:.12em}${PORTRAIT ? `
+${S} .hl-n{font-size:104px}
+${S} .hl-card{padding:0 22px 22px}
+${S} .hl-ph{height:150px}
+${S} .hl-top{font-size:26px;letter-spacing:.08em}
+${S} .hl-nm{font-size:48px;padding-right:44px;min-height:92px}
+${S} .hl-ar{right:18px;bottom:22px}` : ""}
 </style>
-      <div class="hl-eb" style="left:100px;top:96px">${esc(ACT_HL)} · Race day</div>
-      <div class="hl-lab hl-tag" style="right:100px;top:100px"><span class="hl-dot"></span>${esc(C.organizer.date)}</div>
-      <h2 class="big hl-head abs" style="left:100px;top:146px;font-size:136px;white-space:nowrap">${maskLine(`<span class="pixel hl-n">00</span><span class="ol">Reasons to run</span>`)}</h2>
-      <div class="hl-rule abs" style="left:100px;top:300px;width:1720px;height:3px;background:var(--ink);transform-origin:0 50%"></div>
+      <div class="hl-eb" style="left:${G.eb[0]}px;top:${G.eb[1]}px">${esc(ACT_HL)} · Race day</div>
+      <div class="hl-lab hl-tag" style="${G.tag}"><span class="hl-dot"></span>${esc(C.organizer.date)}</div>
+      <h2 class="big hl-head abs" style="left:${X0}px;top:${G.head[0]}px;font-size:${G.head[1]}px;white-space:nowrap">${maskLine(`<span class="pixel hl-n">00</span><span class="ol">Reasons to run</span>`)}</h2>
+      <div class="hl-rule abs" style="left:${X0}px;top:${G.rule[0]}px;width:${G.rule[1]}px;height:3px;background:var(--ink);transform-origin:0 50%"></div>
       ${cards}`,
     anim(root, tl) {
       const cs = qa(root, ".hl-card"), nEl = q(root, ".hl-n");
@@ -87,6 +98,8 @@ ${S} .hl-n{font-size:128px;margin-right:.12em}
           duration: 0.95, ease: "power3.out" }, 0.5 + i * 0.55);
       });
       count(tl, (v) => { nEl.textContent = pad(Math.min(n, Math.ceil(v - 1e-6))); }, 0, n, 0.5, n * 0.55);
+      // clear the frame just after the rest (6.27) and before main.js's iris (6.45), so nothing rides above the wipe
+      tl.fromTo(qa(root, ".hl-card, .hl-eb, .hl-tag, .hl-head, .hl-rule"), { autoAlpha: 1 }, { autoAlpha: 0, duration: 0.25, ease: "power2.in", immediateRender: false }, 6.3);
     },
   };
 }
@@ -123,6 +136,7 @@ ${S} .hl-win{z-index:3}
 ${S} .hl-win .bar span{padding-left:${WIN_BAR_PAD}px}
 ${S} .hl-bib{position:absolute;z-index:3;height:auto;border-radius:10px;box-shadow:0 18px 40px rgba(var(--ink-rgb),.3)}
 ${S} .hl-win .body img{left:0;top:0;width:100%;height:100%}
+${S} .hl-clip{position:absolute;left:0;top:0;width:100%;height:100%;object-fit:cover;display:block}
 ${S} .hl-run{z-index:4;width:192px;height:192px}
 ${S} .hl-badge{position:absolute;z-index:5;color:var(--ink)}
 ${S} .hl-badge svg{position:absolute;inset:0;width:100%;height:100%}
@@ -135,8 +149,7 @@ ${S} .hl-stack{width:900px;font-size:26px;line-height:1.35;white-space:normal}
 ${S} .hl-feats span{font-size:28px}
 ${S} .hl-badge b{font-size:70px}` : ""}`;
 
-// Layout of a showcase frame; kit-zoom reuses it so its poster window starts exactly where the showcase left it.
-// desktop: copy left, posters right; portrait: title, posters, then copy.
+// Layout of a showcase frame. desktop: copy left, posters right; portrait: title, posters, then copy.
 // With bibs (s.bibs) the poster shrinks and the bib cards fan out in a row under it.
 function showcaseLayout(s) {
   return s.bibs?.length
@@ -175,9 +188,12 @@ function showcase(C, i) {
   // badge: desktop overlaps the poster's top-left corner, portrait its top-right (clear of the runner)
   const badgeAt = lay([WL - 120, WT - 150, 240], [WL + BW - 130, WT - 110, 220]);
   const runL = lay(WL + BW - 230, WL + 40);
+  // with a clip (s.clip) the scene runs longer: once the frame has built, the poster crossfades into the clip,
+  // which scrubs with the scroll inside the window; the rest comes after it, on the finished frame
+  const DUR = s.clip ? CLIP.dur : 4.0;
   return {
-    slug, name: `Race Kit · ${name}`, act: ACT_KITS, field: s.field, dur: 4.0, stars: false, ammo: 3,
-    turn: null, rest: "open the links", restAt: 2.5, shoe: false,
+    slug, name: `Race Kit · ${name}`, act: ACT_KITS, field: s.field, dur: DUR, stars: false, ammo: 3,
+    turn: null, rest: "open the links", restAt: s.clip ? CLIP.restAt : 2.5, shoe: false,
     html: `<style>${showcaseCss(S, light)}</style>
       <div class="hl-ghost" style="left:${G.ghost[0]}px;top:${G.ghost[1]}px">${esc(s.ghost || "")}</div>
       <div class="hl-eb" style="left:${G.x}px;top:${G.eb}px">${esc(ACT_KITS)}</div>
@@ -189,7 +205,8 @@ function showcase(C, i) {
       <div class="links hl-links" style="left:${G.x}px;top:${G.links}px">${links}</div>
       <div class="win hl-win" style="left:${WL}px;top:${WT}px;width:${BW + 12}px">
         <div class="bar"><span>${esc(winTitle(s))}</span></div>
-        <div class="body" style="height:${BH}px"><img class="photo" src="${esc(photoSrc(C, s.img))}" alt="${esc(C.brand.title)} ${esc(name)} poster"></div>
+        <div class="body" style="height:${BH}px">${s.clip ? `<video class="hl-clip" src="${esc(s.clip.src)}" data-scrub muted playsinline
+          preload="none" aria-label="${esc(s.clip.alt)}"></video>` : ""}<img class="photo" src="${esc(photoSrc(C, s.img))}" alt="${esc(C.brand.title)} ${esc(name)} poster"></div>
       </div>
       ${two ? s.bibs.map(([src, alt], k) => `<img class="hl-bib" src="${esc(src)}" alt="${esc(alt)}" width="600" height="375"
         style="left:${G.bibs.x[k]}px;top:${G.bibs.y[k]}px;width:${G.bibs.w}px">`).join("") : ""}
@@ -198,12 +215,11 @@ function showcase(C, i) {
     anim(root, tl) {
       const win = q(root, ".hl-win"), run = q(root, ".hl-run");
       tl.from(q(root, ".hl-ghost"), { opacity: 0, yPercent: 14, duration: 1.2, ease: "power3.out" }, 0);
-      tl.fromTo(q(root, ".hl-ghost"), { scale: 1 }, { scale: 1.07, duration: 4, ease: "none", immediateRender: false }, 0);
+      tl.fromTo(q(root, ".hl-ghost"), { scale: 1 }, { scale: 1.07, duration: DUR, ease: "none", immediateRender: false }, 0);
       tl.from(q(root, ".hl-eb"), { opacity: 0, x: -40, duration: 0.6, ease: "power3.out" }, 0.1);
       tl.from(qa(root, ".hl-ttl .mask > span"), { yPercent: 112, duration: 0.85, ease: "expo.out", stagger: 0.12 }, 0.2);
       tl.from(win, { y: 1000, rotation: 12, duration: 1.1, ease: "power3.out" }, 0.2);
-      // drift tilt; with a zoom next, the drift stops at the hand-off (same rate, so the rest pose is unchanged)
-      const drift = s.zoom ? ZOOM_HANDOFF - 1.3 : 2.7, tilt = -2.5 * (drift / 2.7);
+      const drift = DUR - 1.3, tilt = -2.5;
       tl.to(win, { rotation: tilt, duration: drift, ease: "none" }, 1.3);
       // bibs deal in one after another and settle at alternating tilts
       qa(root, ".hl-bib").forEach((el, k) => {
@@ -214,7 +230,7 @@ function showcase(C, i) {
       tl.fromTo(run, { x: -420, y: 1000, rotation: 12 }, { x: -420, y: 0, rotation: 0, duration: 1.1, ease: "power3.out", immediateRender: true }, 0.2);
       tl.to(run, { x: 0, y: -8, rotation: tilt, duration: drift, ease: "none" }, 1.3);
       tl.from(q(root, ".hl-badge"), { scale: 0, rotation: -140, duration: 0.8, ease: "back.out(1.7)" }, 0.75);
-      tl.fromTo(q(root, ".hl-badge svg"), { rotation: 0 }, { rotation: 300, duration: 4, ease: "none", immediateRender: false }, 0);
+      tl.fromTo(q(root, ".hl-badge svg"), { rotation: 0 }, { rotation: 300 * (DUR / 4), duration: DUR, ease: "none", immediateRender: false }, 0);
       tl.from(q(root, ".hl-pitch .mask > span"), { yPercent: 110, duration: 0.7, ease: "expo.out" }, 0.95);
       tl.from(q(root, ".hl-lab.dim"), { opacity: 0, duration: 0.5 }, 1.2);
       qa(root, ".hl-strike").forEach((el, k) => {
@@ -226,23 +242,19 @@ function showcase(C, i) {
         tl.from(el, { opacity: 0, y: 30, duration: 0.5, ease: "power3.out" }, 1.3 + k * 0.2));
       tl.from(q(root, ".hl-stack"), { opacity: 0, x: -30, duration: 0.6, ease: "power3.out" }, 1.9);
       tl.from(qa(root, ".hl-links a"), { opacity: 0, y: 20, duration: 0.5, ease: "power3.out", stagger: 0.12 }, 2.1);
-      if (s.zoom) {
-        const rest = qa(root, ".hl-ghost, .hl-eb, .hl-ttl, .hl-pitch, .hl-lab, .hl-strikes, .hl-feats, .hl-stack, .hl-links, .hl-bib, .hl-run, .hl-badge");
-        // all gone by 3.9, a beat before the cut to kit-zoom (whose first frame has only the window)
-        tl.fromTo(rest, { autoAlpha: 1 }, { autoAlpha: 0, duration: 0.38, ease: "power2.in", stagger: 0.02, immediateRender: false }, ZOOM_HANDOFF);
-        tl.fromTo(win, { rotation: tilt }, { rotation: 0, duration: 4 - ZOOM_HANDOFF, ease: "power2.inOut", immediateRender: false }, ZOOM_HANDOFF);
+      if (s.clip) {
+        const scrub = videoScrubber(q(root, ".hl-clip")), p = { v: 0 };
+        tl.fromTo(q(win, "img"), { autoAlpha: 1 }, { autoAlpha: 0, duration: CLIP.fade[1], ease: "power1.inOut", immediateRender: false }, CLIP.fade[0]);
+        // scrolling back before the clip renders this at v = 0, which parks the clip on its first frame
+        tl.fromTo(p, { v: 0 }, { v: 1, duration: CLIP.scrub[1], ease: "none", immediateRender: false, onUpdate: () => scrub(p.v) }, CLIP.scrub[0]);
       }
     },
   };
 }
 
-/* ---------------- scene 21b: kit-zoom ---------------- */
-// Picks up the race kit poster where showcase-1 leaves it (window squared up, everything else cleared): the
-// window chrome falls away, the poster grows past the frame, crossfades into the clip and the clip scrubs with
-// the scroll, resting on its last frame before the iris to the register scene.
-const ZOOM_HANDOFF = 3.3;          // showcase time at which the hand-off starts (showcase dur 4.0)
-const ZOOM_BLEED = lay([400, 300], [220, 420]);   // [x, y] stage px the grown poster overshoots each side, covering letterbox
-const KZ = { chrome: [0, 0.35], grow: [0.1, 1.3], fade: [1.15, 0.45], scrub: [1.3, 3.2], restAt: 4.6, dur: 5.3 };
+// Showcase clip timing (scene seconds): poster fades into the clip, the clip scrubs, then the rest; the iris to
+// the next scene starts at dur - 0.55, after the rest.
+const CLIP = { fade: [2.7, 0.4], scrub: [2.8, 3.2], restAt: 6.15, dur: 7.0 };
 
 // Seek a paused video to fraction p of its length; one seek in flight at a time, the latest request wins.
 function videoScrubber(video) {
@@ -263,47 +275,6 @@ function videoScrubber(video) {
   return (p) => {
     want = p;
     if (!busyAt || performance.now() - busyAt > STUCK_MS) go();
-  };
-}
-
-function kitZoom(C, s) {
-  const S = scope("kit-zoom"), z = s.zoom;
-  const [WL, WT, BW, BH] = showcaseLayout(s).win;
-  // .win: 2px border + 4px padding, then a 30px bar and 4px gap above the body
-  const BODY = { left: WL + 6, top: WT + 40, width: BW, height: BH };
-  const [bx, by] = ZOOM_BLEED;
-  const FULL = { left: -bx, top: -by, width: SW + 2 * bx, height: SH + 2 * by };
-  const src = PORTRAIT ? z.port : z.land;
-  const box = (r) => `left:${r.left}px;top:${r.top}px;width:${r.width}px;height:${r.height}px`;
-  return {
-    slug: "kit-zoom", name: `Race Kit · ${z.alt}`, act: ACT_KITS, field: s.field, dur: KZ.dur, stars: false, ammo: 3,
-    turn: null, rest: "watch it change", restAt: KZ.restAt, shoe: false,
-    html: `<style>
-${S}{overflow:visible}
-${S} .kz-win{z-index:4}
-${S} .kz-win .bar span{padding-left:${WIN_BAR_PAD}px}
-${S} .kz-frame{position:absolute;z-index:5;overflow:hidden;background:#000}
-${S} .kz-frame video,${S} .kz-frame img{position:absolute;left:0;top:0;width:100%;height:100%;object-fit:cover;display:block}
-</style>
-      <div class="win kz-win" style="left:${WL}px;top:${WT}px;width:${BW + 12}px">
-        <div class="bar"><span>${esc(winTitle(s))}</span></div>
-        <div class="body" style="height:${BH}px"></div>
-      </div>
-      <div class="kz-frame" style="${box(BODY)}">
-        <video src="${esc(src)}" data-scrub muted playsinline preload="none" aria-label="${esc(z.alt)}"></video>
-        <img class="kz-poster" src="${esc(photoSrc(C, s.img))}" alt="">
-      </div>`,
-    anim(root, tl) {
-      const frame = q(root, ".kz-frame"), poster = q(root, ".kz-poster"), video = q(root, "video");
-      const scrub = videoScrubber(video);
-      tl.fromTo(q(root, ".kz-win"), { autoAlpha: 1 }, { autoAlpha: 0, duration: KZ.chrome[1], ease: "power2.out", immediateRender: false }, KZ.chrome[0]);
-      tl.fromTo(frame, { ...BODY }, { ...FULL, duration: KZ.grow[1] - KZ.grow[0], ease: "power3.inOut", immediateRender: false }, KZ.grow[0]);
-      tl.fromTo(poster, { scale: 1 }, { scale: 1.08, duration: KZ.grow[1] - KZ.grow[0] + KZ.fade[1], ease: "power2.inOut", immediateRender: false }, KZ.grow[0]);
-      tl.fromTo(poster, { autoAlpha: 1 }, { autoAlpha: 0, duration: KZ.fade[1], ease: "power1.inOut", immediateRender: false }, KZ.fade[0]);
-      const p = { v: 0 };
-      // scrolling back before the clip renders this at v = 0, which parks the clip on its first frame
-      tl.fromTo(p, { v: 0 }, { v: 1, duration: KZ.scrub[1], ease: "none", immediateRender: false, onUpdate: () => scrub(p.v) }, KZ.scrub[0]);
-    },
   };
 }
 
@@ -438,6 +409,5 @@ ${S} .hl-foot{flex-direction:column;gap:14px;white-space:normal;font-size:22px !
 }
 
 export function scenes(C, P) {
-  const kit = C.showcases[0];
-  return [highlightsRest(C), showcase(C, 0), ...(kit.zoom ? [kitZoom(C, kit)] : []), showcase(C, 1), partnersRest(C), blast(C)];
+  return [highlightsRest(C), showcase(C, 0), showcase(C, 1), partnersRest(C), blast(C)];
 }
