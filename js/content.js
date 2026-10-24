@@ -107,9 +107,6 @@ export const CONTENT = {
         ["assets/img/bib-5k.webp", "5K race bib 50001"],
         ["assets/img/bib-10k.webp", "10K race bib 10001"],
       ],
-      // once the frame has built, the poster crossfades into this 4s clip inside its window and the clip scrubs with
-      // the scroll. 1120x552 (the window's ratio) with the clip's edges extended sideways; keyframe every 6 frames.
-      clip: { src: "assets/video/bib-to-singlet-win.mp4", alt: "A race bib turning into the official TechRun singlet" },
       links: [["Ask about kits", mail("TechRun 2027 · Race kit")]],
     },
     {

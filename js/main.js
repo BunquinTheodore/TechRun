@@ -68,27 +68,13 @@ const startField = (s) => (s.field === "quad" ? "ink" : s.field);
 // Images load just ahead of their scene (and the rest once the film lands), not all at boot, so the
 // opening frames are not queued behind a few hundred KB of later artwork on a phone connection.
 const LOAD_AHEAD = 3;          // scenes past the active one whose images are fetched
-const deferImgs = (html) => html.replace(/<(img|video)\b([^>]*?)\ssrc=/g, "<$1$2 data-src=");
+const deferImgs = (html) => html.replace(/<img\b([^>]*?)\ssrc=/g, "<img$1 data-src=");
 function hydrate(scene) {
   if (!scene || scene.hydrated) return;
   scene.hydrated = true;
   for (const img of scene.root.querySelectorAll("img[data-src]")) {
     img.src = img.dataset.src;
     img.removeAttribute("data-src");
-  }
-  for (const video of scene.root.querySelectorAll("video[data-src]")) {
-    const url = video.dataset.src;
-    video.removeAttribute("data-src");
-    video.preload = "auto";
-    if (!video.hasAttribute("data-scrub")) { video.src = url; continue; }
-    // scroll-scrubbed clips play from memory: seekable on any server (no range requests needed) and no frame
-    // waits on the network mid-scroll. A muted play/pause then primes decoding (iOS paints nothing otherwise).
-    fetch(url)
-      .then((r) => (r.ok ? r.blob() : Promise.reject(new Error(`${url} ${r.status}`))))
-      .then((blob) => { video.src = URL.createObjectURL(blob); })
-      .catch((e) => { console.error("scrub video", e); video.src = url; })
-      .then(() => video.play())
-      .then(() => video.pause(), () => {});
   }
 }
 const whenIdle = (fn) => (window.requestIdleCallback ? requestIdleCallback(fn, { timeout: 2000 }) : setTimeout(fn, 200));

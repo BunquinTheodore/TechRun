@@ -3,8 +3,8 @@ import { pad, q, qa, esc, count, linkAttrs } from "./util.js";
 import { PALETTE, GRADIENT_STOPS, LIGHT_FIELDS } from "../palette.js";
 import { PORTRAIT, lay } from "../stage.js";
 
-const ACT_HL = "03 · Highlights";
-const ACT_KITS = "04 · Race Kit";
+const ACT_HL = "04 · Highlights";
+const ACT_KITS = "03 · Race Kit";
 const ACT_PARTNERS = "07 · Partners";
 const ACT_REGISTER = "05 · Register";
 // runner GIF: the feet sit ~8% above the bottom of the 512px frame
@@ -136,7 +136,6 @@ ${S} .hl-win{z-index:3}
 ${S} .hl-win .bar span{padding-left:${WIN_BAR_PAD}px}
 ${S} .hl-bib{position:absolute;z-index:3;height:auto;border-radius:10px;box-shadow:0 18px 40px rgba(var(--ink-rgb),.3)}
 ${S} .hl-win .body img{left:0;top:0;width:100%;height:100%}
-${S} .hl-clip{position:absolute;left:0;top:0;width:100%;height:100%;object-fit:cover;display:block}
 ${S} .hl-run{z-index:4;width:192px;height:192px}
 ${S} .hl-badge{position:absolute;z-index:5;color:var(--ink)}
 ${S} .hl-badge svg{position:absolute;inset:0;width:100%;height:100%}
@@ -188,12 +187,10 @@ function showcase(C, i) {
   // badge: desktop overlaps the poster's top-left corner, portrait its top-right (clear of the runner)
   const badgeAt = lay([WL - 120, WT - 150, 240], [WL + BW - 130, WT - 110, 220]);
   const runL = lay(WL + BW - 230, WL + 40);
-  // with a clip (s.clip) the scene runs longer: once the frame has built, the poster crossfades into the clip,
-  // which scrubs with the scroll inside the window; the rest comes after it, on the finished frame
-  const DUR = s.clip ? CLIP.dur : 4.0;
+  const DUR = 4.0;
   return {
     slug, name: `Race Kit · ${name}`, act: ACT_KITS, field: s.field, dur: DUR, stars: false, ammo: 3,
-    turn: null, rest: "open the links", restAt: s.clip ? CLIP.restAt : 2.5, shoe: false,
+    turn: null, rest: "open the links", restAt: 2.5, shoe: false,
     html: `<style>${showcaseCss(S, light)}</style>
       <div class="hl-ghost" style="left:${G.ghost[0]}px;top:${G.ghost[1]}px">${esc(s.ghost || "")}</div>
       <div class="hl-eb" style="left:${G.x}px;top:${G.eb}px">${esc(ACT_KITS)}</div>
@@ -205,8 +202,7 @@ function showcase(C, i) {
       <div class="links hl-links" style="left:${G.x}px;top:${G.links}px">${links}</div>
       <div class="win hl-win" style="left:${WL}px;top:${WT}px;width:${BW + 12}px">
         <div class="bar"><span>${esc(winTitle(s))}</span></div>
-        <div class="body" style="height:${BH}px">${s.clip ? `<video class="hl-clip" src="${esc(s.clip.src)}" data-scrub muted playsinline
-          preload="none" aria-label="${esc(s.clip.alt)}"></video>` : ""}<img class="photo" src="${esc(photoSrc(C, s.img))}" alt="${esc(C.brand.title)} ${esc(name)} poster"></div>
+        <div class="body" style="height:${BH}px"><img class="photo" src="${esc(photoSrc(C, s.img))}" alt="${esc(C.brand.title)} ${esc(name)} poster"></div>
       </div>
       ${two ? s.bibs.map(([src, alt], k) => `<img class="hl-bib" src="${esc(src)}" alt="${esc(alt)}" width="600" height="375"
         style="left:${G.bibs.x[k]}px;top:${G.bibs.y[k]}px;width:${G.bibs.w}px">`).join("") : ""}
@@ -242,39 +238,7 @@ function showcase(C, i) {
         tl.from(el, { opacity: 0, y: 30, duration: 0.5, ease: "power3.out" }, 1.3 + k * 0.2));
       tl.from(q(root, ".hl-stack"), { opacity: 0, x: -30, duration: 0.6, ease: "power3.out" }, 1.9);
       tl.from(qa(root, ".hl-links a"), { opacity: 0, y: 20, duration: 0.5, ease: "power3.out", stagger: 0.12 }, 2.1);
-      if (s.clip) {
-        const scrub = videoScrubber(q(root, ".hl-clip")), p = { v: 0 };
-        tl.fromTo(q(win, "img"), { autoAlpha: 1 }, { autoAlpha: 0, duration: CLIP.fade[1], ease: "power1.inOut", immediateRender: false }, CLIP.fade[0]);
-        // scrolling back before the clip renders this at v = 0, which parks the clip on its first frame
-        tl.fromTo(p, { v: 0 }, { v: 1, duration: CLIP.scrub[1], ease: "none", immediateRender: false, onUpdate: () => scrub(p.v) }, CLIP.scrub[0]);
-      }
     },
-  };
-}
-
-// Showcase clip timing (scene seconds): poster fades into the clip, the clip scrubs, then the rest; the iris to
-// the next scene starts at dur - 0.55, after the rest.
-const CLIP = { fade: [2.7, 0.4], scrub: [2.8, 3.2], restAt: 6.15, dur: 7.0 };
-
-// Seek a paused video to fraction p of its length; one seek in flight at a time, the latest request wins.
-function videoScrubber(video) {
-  const STUCK_MS = 400;            // give up on a seek that never reports back
-  let want = 0, busyAt = 0;
-  const go = () => {
-    const d = video.duration;
-    if (!d || video.readyState < 1) return;
-    const t = Math.min(d - 0.04, Math.max(0, want * d));
-    if (Math.abs(video.currentTime - t) < 0.02) return;
-    busyAt = performance.now();
-    video.currentTime = t;
-  };
-  video.addEventListener("seeked", () => { busyAt = 0; go(); });
-  video.addEventListener("loadedmetadata", go);
-  video.addEventListener("loadeddata", go);
-  video.addEventListener("pause", go);   // after main.js's priming play/pause, return to the scrubbed frame
-  return (p) => {
-    want = p;
-    if (!busyAt || performance.now() - busyAt > STUCK_MS) go();
   };
 }
 
@@ -409,5 +373,6 @@ ${S} .hl-foot{flex-direction:column;gap:14px;white-space:normal;font-size:22px !
 }
 
 export function scenes(C, P) {
-  return [highlightsRest(C), showcase(C, 0), showcase(C, 1), partnersRest(C), blast(C)];
+  // film order: race kit (03), then the highlights (04)
+  return [showcase(C, 0), highlightsRest(C), showcase(C, 1), partnersRest(C), blast(C)];
 }
