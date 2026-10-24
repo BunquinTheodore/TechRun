@@ -1,6 +1,6 @@
 // Scenes 01-05: biometric-scan, access-granted, collapse-to-the-dot, name, word-burst.
 import { pad, q, qa, esc, decode, count, linkAttrs } from "./util.js";
-import { PORTRAIT, SW, SH, lay } from "../stage.js";
+import { PORTRAIT, SW, DH, lay } from "../stage.js";
 
 const hash = (n) => { const x = Math.sin(n * 127.1 + 311.7) * 43758.5453; return x - Math.floor(x); };
 
@@ -25,7 +25,7 @@ function fingerprintPaths() {
   return out.join("");
 }
 
-const SCAN_TOP = lay(190, 420), SCAN_H = 660;
+const SCAN_TOP = lay(190, 330), SCAN_H = 660;
 const FP_L = lay(680, 260);                 // fingerprint box left (560 x 700)
 const BS_FS = lay(20, 30);                  // readout type size
 
@@ -45,9 +45,9 @@ function biometricHtml(C) {
   ${S} .bs-st { position:absolute; top:0; right:0; white-space:nowrap; }
   ${S} .bs-px { position:absolute; width:18px; height:18px; }
 </style>
-<div class="eyebrow abs bs-eye" style="left:${M}px;top:${lay(128, 110)}px">Runner check-in</div>
-<div class="bs-mono abs bs-l1" style="left:${M}px;top:${lay(186, 180)}px">Runner ID <b>001</b><br>${esc(C.brand.title)}<br>Sensor 500 dpi</div>
-<div class="bs-mono abs bs-r1" style="right:${M}px;top:${lay(128, 180)}px;text-align:right">Check-in <b>01 / 05</b><br>Timing chip <b>linked</b></div>
+<div class="eyebrow abs bs-eye" style="left:${M}px;top:${lay(128, 40)}px">Runner check-in</div>
+<div class="bs-mono abs bs-l1" style="left:${M}px;top:${lay(186, 100)}px">Runner ID <b>001</b><br>${esc(C.brand.title)}<br>Sensor 500 dpi</div>
+<div class="bs-mono abs bs-r1" style="right:${M}px;top:${lay(128, 100)}px;text-align:right">Check-in <b>01 / 05</b><br>Timing chip <b>linked</b></div>
 
 <div class="bs-ticks bs-t" style="left:${FP_L - 60}px"></div>
 <div class="bs-ticks bs-t" style="left:${FP_L + 594}px"></div>
@@ -68,13 +68,13 @@ ${brk(FP_L - 40, SCAN_TOP - 40, "3px 0 0 3px")}${brk(FP_L + 536, SCAN_TOP - 40, 
 </svg>
 <div class="scanline bs-scan" style="top:${SCAN_TOP}px${PORTRAIT ? `;left:${FP_L - 20}px;right:auto;width:600px` : ""}"></div>
 
-<div class="abs bs-num" style="left:${M}px;top:${lay(740, 1330)}px;display:flex;align-items:flex-end;gap:14px">
+<div class="abs bs-num" style="left:${M}px;top:${lay(740, 1150)}px;display:flex;align-items:flex-end;gap:14px">
   <div class="mono" style="position:absolute;left:0;top:${lay(-40, -50)}px;font-size:${lay(18, 28)}px;color:var(--ash);white-space:nowrap">Check-in progress</div>
-  <span class="pixel bs-val" style="font-size:190px;line-height:.82">00</span>
+  <span class="pixel bs-val" style="font-size:${lay(190, 170)}px;line-height:.82">00</span>
   <span class="pixel" style="font-size:72px;line-height:.9;color:var(--lime)">%</span>
 </div>
 
-<div class="bs-mono abs bs-r2" style="right:${M}px;top:${lay(690, 1540)}px;text-align:right;line-height:1.9">
+<div class="bs-mono abs bs-r2" style="right:${M}px;top:${lay(690, 1130)}px;text-align:right;line-height:1.9">
   Stride <b>mapped</b><br>
   Ridges <b class="bs-min">000</b><br>
   <span style="position:relative;display:inline-block;min-width:${lay(330, 420)}px;height:${lay(38, 57)}px">
@@ -114,7 +114,7 @@ function biometricAnim(root, tl) {
 
 // ---------- 02 / 03 shared "READY / SET." block ----------
 const READY = "READY", SET = "SET.";
-const CX = SW / 2, CY = SH / 2;                // frame centre
+const CX = SW / 2, CY = DH / 2;                // frame centre
 const RB_X = lay(200, 60);                     // corner brackets inset from the sides
 const RB_FS = lay(250, 220);                   // READY / SET type size
 function readyBlock(p) {
@@ -134,7 +134,7 @@ function readyBlock(p) {
 }
 
 function accessHtml() {
-  return readyBlock("ag-") + `<div class="ag-flash" style="position:absolute;inset:0;background:var(--lime);opacity:0;z-index:9"></div>`;
+  return readyBlock("ag-") + `<div class="ag-flash" style="position:absolute;left:0;right:0;top:-800px;bottom:-800px;background:var(--lime);opacity:0;z-index:9"></div>`;
 }
 
 function accessAnim(root, tl) {
@@ -179,18 +179,18 @@ function collapseAnim(root, tl) {
 }
 
 // ---------- 04 name (hero on lime): the "first page" with every key detail and the register button ----------
-const NAME_FS = lay(270, 300);  // TECH / RUN (Tektur 900 condensed)
-const YEAR_FS = lay(204, 226);  // 2027 (Tiny5), sized to sit under TECH
+const NAME_FS = lay(270, 240);  // TECH / RUN (Tektur 900 condensed)
+const YEAR_FS = lay(204, 180);  // 2027 (Tiny5), sized to sit under TECH
 const PERIOD_EM = 0.2;          // full stop, relative to YEAR_FS
 // hero layout: desktop keeps the type left, register block centred, legs top right; portrait stacks
-// type, register block and copy, with the legs striding in at the bottom right beside the copy
+// type, register block and copy, with the legs striding in beside TECH / RUN
 const NM = lay(
   { m: 130, markX: 112, markY: 78, mark: 96, metaX: 214, metaY: 110, metaFs: 20, ruleY: 166, ruleW: 760, blockY: 236,
     legs: [1000, -70, 1000], ctaX: 750, ctaY: 384, ctaW: 420, chipFs: 40, chipW: 112, regH: 108, regFs: 44, noteFs: 16, partnerH: 58,
     titleX: 1240, titleY: 716, titleW: 590, tagFs: 40, botY: 900 },
-  { m: 90, markX: 90, markY: 70, mark: 84, metaX: 190, metaY: 98, metaFs: 26, ruleY: 172, ruleW: 900, blockY: 240,
-    legs: [540, 1440, 640], ctaX: 90, ctaY: 1010, ctaW: 900, chipFs: 52, chipW: 170, regH: 132, regFs: 56, noteFs: 24, partnerH: 60,
-    titleX: 90, titleY: 1540, titleW: 560, tagFs: 44, botY: 1725 },
+  { m: 90, markX: 90, markY: 24, mark: 80, metaX: 186, metaY: 50, metaFs: 26, ruleY: 120, ruleW: 900, blockY: 160,
+    legs: [470, 150, 610], ctaX: 90, ctaY: 762, ctaW: 900, chipFs: 52, chipW: 170, regH: 120, regFs: 56, noteFs: 24, partnerH: 56,
+    titleX: 90, titleY: 1214, titleW: 900, tagFs: 40, botY: 1315, botFs: 22 },
 );
 const REG_W = lay(420, 640);
 // pixel bits around the runner's feet (stage px for the desktop legs, size, colour token); re-mapped onto the portrait legs
@@ -218,7 +218,7 @@ function nameHtml(C) {
   ${S} .nm-pw .iris { width:3400px; height:3400px; background:var(--ink); z-index:30; margin:0; border-radius:0; }
   ${S} .nm-px { position:absolute; z-index:3; }
   ${S} .nm-legs { position:absolute; left:${NM.legs[0]}px; top:${NM.legs[1]}px; width:${NM.legs[2]}px; height:auto; z-index:2; mix-blend-mode:multiply; }
-  ${S} .nm-cta { position:absolute; left:${NM.ctaX}px; top:${NM.ctaY}px; width:${NM.ctaW}px; z-index:6; display:grid; justify-items:center; gap:${lay(22, 28)}px; text-align:center; }
+  ${S} .nm-cta { position:absolute; left:${NM.ctaX}px; top:${NM.ctaY}px; width:${NM.ctaW}px; z-index:6; display:grid; justify-items:center; gap:${lay(22, 20)}px; text-align:center; }
   ${S} .nm-cta .eyebrow { color:var(--ink); }
   ${S} .nm-dists { display:flex; gap:${lay(12, 20)}px; }
   ${S} a.nm-d { font:400 ${NM.chipFs}px/1 var(--pixel); color:var(--ink); text-decoration:none; border:3px solid var(--ink); padding:14px 20px 10px; min-width:${NM.chipW}px;
@@ -265,7 +265,7 @@ ${px}
   <div class="eyebrow">${esc(O.line)}</div>
   <p style="margin:24px 0 0;font:600 ${NM.tagFs}px/1.18 var(--sans);color:var(--ink)">${esc(B.tagline)}</p>
 </div>
-<div class="nm-meta nm-bot" style="left:${NM.titleX}px;top:${NM.botY}px;white-space:normal;width:${NM.titleW}px">${esc(C.location.city)}, ${esc(C.location.country)}<br>${esc(C.location.venue)} &nbsp;·&nbsp; ${esc(O.date)}</div>`;
+<div class="nm-meta nm-bot" style="left:${NM.titleX}px;top:${NM.botY}px;white-space:normal;width:${NM.titleW}px${NM.botFs ? `;font-size:${NM.botFs}px;line-height:1.5` : ""}">${esc(C.location.city)}, ${esc(C.location.country)}<br>${esc(C.location.venue)} &nbsp;·&nbsp; ${esc(O.date)}</div>`;
 }
 
 function nameAnim(root, tl) {

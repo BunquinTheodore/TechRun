@@ -35,7 +35,7 @@ function highlightsRest(C) {
   // desktop: header over a 4x2 grid; portrait: stacked header over a 2x4 grid
   const G = lay(
     { cols: 4, gap: 40, x: 100, w: 400, y0: 336, yEnd: 976, eb: [100, 96], tag: "right:100px;top:100px", head: [146, 136], rule: [300, 1720] },
-    { cols: 2, gap: 40, x: 90, w: 430, y0: 392, yEnd: 1850, eb: [90, 100], tag: "left:90px;top:150px", head: [206, 112], rule: [350, 900] },
+    { cols: 2, gap: 20, x: 90, w: 440, y0: 278, yEnd: 1390, eb: [90, 30], tag: "left:90px;top:76px", head: [114, 112], rule: [250, 900] },
   );
   const { cols: COLS, gap: GAP, x: X0, w: W, y0: Y0, yEnd: YEND } = G;
   const rows = Math.ceil(n / COLS), H = Math.floor((YEND - Y0 - GAP * (rows - 1)) / rows);
@@ -75,8 +75,8 @@ ${S} .hl-card:hover .hl-ar,${S} .hl-card:focus-visible .hl-ar{transform:translat
 ${S} .hl-card.f-ink:hover .hl-ar,${S} .hl-card.f-ink:focus-visible .hl-ar{color:var(--ink)}
 ${S} .hl-n{font-size:128px;margin-right:.12em}${PORTRAIT ? `
 ${S} .hl-n{font-size:104px}
-${S} .hl-card{padding:0 22px 22px}
-${S} .hl-ph{height:150px}
+${S} .hl-card{padding:0 22px 20px;gap:10px}
+${S} .hl-ph{height:104px}
 ${S} .hl-top{font-size:26px;letter-spacing:.08em}
 ${S} .hl-nm{font-size:48px;padding-right:44px;min-height:92px}
 ${S} .hl-ar{right:18px;bottom:22px}` : ""}
@@ -144,26 +144,28 @@ ${S} .hl-badge b{font:900 76px/.9 var(--sans);font-stretch:75%;letter-spacing:-.
 ${S} .hl-badge small{margin-top:8px;max-width:150px;font:700 15px/1.2 var(--mono);letter-spacing:.12em;text-transform:uppercase}${PORTRAIT ? `
 ${S} .hl-ghost{display:none}
 ${S} .hl-pitch{font-size:38px}
+${S} .hl-ttl{font-size:160px}
 ${S} .hl-stack{width:900px;font-size:26px;line-height:1.35;white-space:normal}
 ${S} .hl-feats span{font-size:28px}
 ${S} .hl-badge b{font-size:70px}` : ""}`;
 
 // Layout of a showcase frame. desktop: copy left, posters right; portrait: title, posters, then copy.
-// With bibs (s.bibs) the poster shrinks and the bib cards fan out in a row under it.
+// With bibs (s.bibs) the poster shrinks and the bib cards fan out in a row under it (desktop) or stack down its
+// right side (portrait). Portrait coordinates are on the 1080 x 1400 design frame (js/stage.js).
 function showcaseLayout(s) {
   return s.bibs?.length
     ? lay(
       { x: 110, ghost: [560, 120], eb: 110, ttl: 196, pitch: 556, pitchW: 1000, lab: 646, extra: 690, stack: 822, links: 904,
         win: [1060, 230, 560, 276], bibs: { x: [1030, 1290, 1550], y: [612, 646, 620], w: 250 } },
-      { x: 90, ghost: [300, 420], eb: 100, ttl: 150, pitch: 1390, pitchW: 900, lab: 1530, extra: 1576, stack: 1696, links: 1796,
-        win: [90, 658, 760, 375], bibs: { x: [90, 395, 700], y: [1120, 1146, 1124], w: 290 } },
+      { x: 90, ghost: [300, 420], eb: 30, ttl: 76, pitch: 964, pitchW: 900, lab: 1094, extra: 1134, stack: 1250, links: 1342,
+        win: [90, 544, 620, 306], bibs: { x: [736, 744, 736], y: [504, 638, 772], w: 250 }, badge: [30, 424, 220], runL: 480 },
     )
     : lay(
       { x: 110, ghost: [560, 120], eb: 110, ttl: 196, pitch: 556, pitchW: 1000, lab: 646, extra: 690, stack: 822, links: 904, win: [1120, 360, 700, 345] },
-      { x: 90, ghost: [300, 420], eb: 110, ttl: 170, pitch: 1300, pitchW: 900, lab: 1430, extra: 1476, stack: 1610, links: 1730, win: [90, 730, 900, 444] },
+      { x: 90, ghost: [300, 420], eb: 30, ttl: 76, pitch: 960, pitchW: 900, lab: 1090, extra: 1136, stack: 1250, links: 1330, win: [90, 470, 900, 444] },
     );
 }
-const WIN_BAR_PAD = lay(120, 10);   // .hl-win title inset (clears the badge on desktop)
+const WIN_BAR_PAD = lay(120, 170);  // .hl-win title inset, clear of the badge on its top-left corner
 const winTitle = (s) => `${s.title.join("_").toLowerCase()}.jpg`;
 
 function showcase(C, i) {
@@ -184,9 +186,10 @@ function showcase(C, i) {
   const runner = C.assets.runners[s.runner] || C.assets.runners.cyber;
   // framed poster: a Win98 window whose body keeps the image's ratio (singlets 1400x691)
   const [WL, WT, BW, BH] = G.win;
-  // badge: desktop overlaps the poster's top-left corner, portrait its top-right (clear of the runner)
-  const badgeAt = lay([WL - 120, WT - 150, 240], [WL + BW - 130, WT - 110, 220]);
-  const runL = lay(WL + BW - 230, WL + 40);
+  // badge: desktop overlaps the poster's top-left corner, portrait its top-right (clear of the runner), unless
+  // the layout places it (G.badge, and the runner with G.runL)
+  const badgeAt = G.badge || lay([WL - 120, WT - 150, 240], [WL + BW - 130, WT - 110, 220]);
+  const runL = G.runL ?? lay(WL + BW - 230, WL + 40);
   const DUR = 4.0;
   return {
     slug, name: `Race Kit · ${name}`, act: ACT_KITS, field: s.field, dur: DUR, stars: false, ammo: 3,
@@ -313,7 +316,7 @@ function blast(C) {
     : maskLine(`${esc(words.join(" "))} <span class="ol">${esc(last)}</span>`);
   const G = lay(
     { x: 100, eb: 92, mega: 140, win: [1420, 150], rows: 380, rowsW: 1720, sprintY: 884, foot: 902 },
-    { x: 90, eb: 110, mega: 170, win: [580, 400], rows: 680, rowsW: 900, sprintY: 1473, foot: 1510 },
+    { x: 90, eb: 30, mega: 76, win: [580, 300], rows: 548, rowsW: 900, sprintY: 1240, foot: 1262 },
   );
   const rows = ct.links.map((l) => `<a class="hl-row" ${linkAttrs(l.url)}>
       <span class="hl-rl">${esc(l.label)}</span><span class="hl-rv">${esc(l.value)}</span>${ARROW(34)}</a>`).join("");
@@ -334,7 +337,7 @@ ${S} .hl-row:hover svg,${S} .hl-row:focus-visible svg{transform:translate(6px,-6
 ${S} .hl-cover{z-index:3}
 ${S} .hl-cover .body img{left:0;top:0;width:100%;height:100%}
 ${S} .hl-sprint{z-index:4;width:192px;height:192px}${PORTRAIT ? `
-${S} .hl-row{grid-template-columns:1fr 50px;grid-template-rows:auto auto;row-gap:14px;height:150px;align-content:center}
+${S} .hl-row{grid-template-columns:1fr 50px;grid-template-rows:auto auto;row-gap:12px;height:130px;align-content:center}
 ${S} .hl-rl{grid-row:1;font-size:26px}
 ${S} .hl-rv{grid-row:2;font-size:52px}
 ${S} .hl-row svg{grid-column:2;grid-row:1 / span 2}

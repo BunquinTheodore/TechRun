@@ -196,7 +196,7 @@ body { cursor: none; font-family: var(--sans); color: var(--paper); }
 @media (prefers-reduced-motion: reduce) { #runner { display: none; } }
 
 /* ---- portrait (phones): a 1080x1920 frame; scene layouts come from js/stage.js ---- */
-.portrait #stage, .portrait #gun { width: 1080px; height: 1920px; }
+/* portrait stage size is set by main.js from js/stage.js (width 1080, height fitted to the phone) */
 /* the frame is letterboxed on phones: let iris wipes spill into the margin so the field change is seamless */
 .portrait .scene { overflow: visible; }
 .portrait .eyebrow { font-size: 30px; }

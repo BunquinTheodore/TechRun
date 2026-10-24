@@ -384,7 +384,7 @@ function categoryRow(C, c, i, ROW, TOP) {
 
 function distancesRestScene(C) {
   const cats = C.categories.slice(0, 3);
-  const ROW = lay(230, 360), TOP = lay(196, 520), X = lay(90, 90), LW = lay(1740, 900);
+  const ROW = lay(230, 400), TOP = lay(196, 170), X = lay(90, 90), LW = lay(1740, 900);
   const rows = cats.map((c, i) => categoryRow(C, c, i, ROW, TOP)).join("");
   const lines = Array.from({ length: cats.length + 1 }, (_, i) =>
     `<div class="abs dr-line" style="left:${X}px;top:${TOP + i * ROW}px;width:${LW}px;height:2px;background:var(--paper);opacity:.35;transform-origin:0 50%"></div>`).join("");
@@ -393,8 +393,8 @@ function distancesRestScene(C) {
     stars: true, ammo: 1, turn: null, rest: "pick your distance", restAt: 1.7, shoe: false,
     html: `
       ${restCss(ROW)}
-      <div class="abs" style="left:${lay(100, 90)}px;top:${lay(112, 350)}px">${mask(`<span class="eyebrow">Distances</span>`)}</div>
-      <div class="abs mono dim dr-count" style="${lay("right:100px;top:116px;font-size:20px", "left:90px;top:410px;font-size:26px")}">${pad(cats.length)} categories · ${esc(C.brand.title)}</div>
+      <div class="abs" style="left:${lay(100, 90)}px;top:${lay(112, 40)}px">${mask(`<span class="eyebrow">Distances</span>`)}</div>
+      <div class="abs mono dim dr-count" style="${lay("right:100px;top:116px;font-size:20px", "left:90px;top:100px;font-size:26px")}">${pad(cats.length)} categories · ${esc(C.brand.title)}</div>
       ${lines}${rows}`,
     anim(root, tl) {
       root.classList.add("starry");

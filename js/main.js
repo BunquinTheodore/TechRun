@@ -3,7 +3,7 @@ import { CONTENT as C } from "./content.js";
 import { buildAll } from "./scenes/index.js";
 import { IDLE_POSE, makePoser, clamp, esc } from "./scenes/util.js";
 import { FIELD_BG, LIGHT_FIELDS, rgba } from "./palette.js";
-import { PORTRAIT, PORTRAIT_QUERY, SW, SH } from "./stage.js";
+import { PORTRAIT, PORTRAIT_QUERY, PORTRAIT_TOP, PORTRAIT_BOTTOM, SW, SH, DH } from "./stage.js";
 
 const SCENE_PX = 850;          // scroll px for a 2.5s scene; others scale with duration (clamped)
 const HOLD_PX = 600;           // extra scroll a resting frame stays put for
@@ -14,8 +14,6 @@ const LANDING = ["name", 1.5];
 const GUN_SAFETY_MS = 15000;   // never leave the boot stuck at 97%
 const COLOR = FIELD_BG;
 const REST_SLUG = "laced-rest";
-// portrait: viewport px kept clear of the frame for the HUD corners (top) and the runner track (bottom)
-const PORTRAIT_TOP = 40, PORTRAIT_BOTTOM = 136;
 
 const $ = (id) => document.getElementById(id);
 const stage = $("stage"), viewport = $("viewport"), gunCanvas = $("gun"), starsCanvas = $("stars");
@@ -85,7 +83,11 @@ const mountScene = (s, eager) => {
   if (s.rest) root.dataset.rest = s.rest;
   root.setAttribute("role", "region");
   root.setAttribute("aria-label", s.name);
-  root.innerHTML = eager ? s.html || "" : deferImgs(s.html || "");
+  const html = eager ? s.html || "" : deferImgs(s.html || "");
+  // portrait layouts are drawn on a 1080 x DH frame, centred in the (possibly taller) stage
+  root.innerHTML = SH > DH
+    ? `<div class="pframe" style="position:absolute;left:0;top:${Math.round((SH - DH) / 2)}px;width:${SW}px;height:${DH}px">${html}</div>`
+    : html;
   stage.insertBefore(root, gunCanvas);
   return root;
 };
@@ -560,6 +562,7 @@ makeGrain();
 buildAbout();
 viewport.insertBefore(starsCanvas, stage); // stars sit between the field colour and the (transparent) starry scenes
 stage.style.zIndex = "2";
+for (const el of [stage, gunCanvas]) Object.assign(el.style, { width: `${SW}px`, height: `${SH}px` });
 fit();
 addEventListener("resize", fit);
 // rotating across the portrait/landscape line swaps the scene layouts, which are built once: reload into the other one
