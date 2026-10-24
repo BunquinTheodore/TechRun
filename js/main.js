@@ -5,7 +5,7 @@ import { IDLE_POSE, makePoser, clamp, esc } from "./scenes/util.js";
 import { FIELD_BG, LIGHT_FIELDS, rgba } from "./palette.js";
 
 const SCENE_PX = 850;          // scroll px for a 2.5s scene; others scale with duration (clamped)
-const HOLD_PX = 800;           // extra scroll a resting frame stays put for
+const HOLD_PX = 600;           // extra scroll a resting frame stays put for
 const IRIS_SEC = 0.55;         // length of the scene-to-scene iris
 const IRIS_SIZE = 4500;        // iris circle diameter, stage px
 const BOOT_GATE = ["biometric-scan", 2.3];

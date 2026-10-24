@@ -1,5 +1,5 @@
 // Scenes 06-10: location, timezone, organizer, distances, distances-rest.
-import { pad, q, qa, esc, clamp, count } from "./util.js";
+import { pad, q, qa, esc, clamp, count, linkAttrs } from "./util.js";
 import { PALETTE, GRADIENT_STOPS, rgba } from "../palette.js";
 
 const WORLD_URL = "https://cdn.jsdelivr.net/npm/world-atlas@2.0.2/countries-110m.json";
@@ -8,7 +8,7 @@ const PAPER = PALETTE.paper;
 const LIME = PALETTE.lime;
 const CYAN = PALETTE.cyan;
 const ACT_ABOUT = "02 · About";
-const ACT_DIST = "03 · Distances";
+const ACT_DIST = "02 · Distances";
 
 // font-size that keeps `text` inside `width` px. k = advance factor (Tektur 900 @ 75% ≈ 0.58, Tiny5 ≈ 0.72)
 const fit = (text, max, width, k = 0.58) =>
@@ -354,7 +354,7 @@ const restCss = (ROW) => `
 function categoryRow(C, c, i, ROW, TOP) {
   const R = C.assets.runners[RUNNER_KEYS[i % RUNNER_KEYS.length]];
   return `
-    <a class="dr" href="${esc(c.url)}" aria-label="Register for the ${esc(c.name)} ${esc(c.label)}" style="top:${TOP + i * ROW}px">
+    <a class="dr" ${linkAttrs(c.url)} aria-label="Register for the ${esc(c.name)} ${esc(c.label)}" style="top:${TOP + i * ROW}px">
       <span class="mono dr-i">${pad(i + 1)}</span>
       <span class="dr-run">
         <img class="sprite walk" src="${esc(R.walk)}" alt="">

@@ -2,6 +2,11 @@
 const EMAIL = "techrun.contactus@gmail.com";
 const mail = (subject) => `mailto:${EMAIL}?subject=${encodeURIComponent(subject)}`;
 
+// Registration link: paste the registration URL here when it is ready. Until then every register button
+// falls back to an email asking to be notified when registration opens.
+const REGISTER_URL = "";
+const register = (subject) => REGISTER_URL || mail(subject);
+
 export const CONTENT = {
   brand: {
     name: "TechRun",
@@ -44,6 +49,12 @@ export const CONTENT = {
       cap: { name: "Cap", walk: "assets/gif/cap-walk.gif", run: "assets/gif/cap-run.gif" },
     },
   },
+  register: {
+    url: register("TechRun 2027 · Notify me when registration opens"),
+    live: Boolean(REGISTER_URL),
+    label: "Register now",
+    note: REGISTER_URL ? "3K · 5K · 10K · Slots are limited" : "Opens soon · Get notified",
+  },
   words: ["MOVE", "PEOPLE", "BRIGHTER", "TOMORROW"],
   // venue is TBA; the globe points at the host city
   location: { city: "Metro Manila", country: "Philippines", venue: "Venue TBA", lat: 14.6, lon: 121.0, tz: "Asia/Manila", tzLabel: "GMT+8" },
@@ -57,9 +68,9 @@ export const CONTENT = {
   },
   // race categories (scene: distances)
   categories: [
-    { name: "3K", label: "Fun Run", note: "Walk it, jog it, bring the crew", bib: "30001", url: mail("TechRun 2027 · 3K registration") },
-    { name: "5K", label: "Run", note: "The classic distance", bib: "50001", url: mail("TechRun 2027 · 5K registration") },
-    { name: "10K", label: "Challenge", note: "For the ones chasing a PR", bib: "10001", url: mail("TechRun 2027 · 10K registration") },
+    { name: "3K", label: "Fun Run", note: "Walk it, jog it, bring the crew", bib: "30001", url: register("TechRun 2027 · 3K registration") },
+    { name: "5K", label: "Run", note: "The classic distance", bib: "50001", url: register("TechRun 2027 · 5K registration") },
+    { name: "10K", label: "Challenge", note: "For the ones chasing a PR", bib: "10001", url: register("TechRun 2027 · 10K registration") },
   ],
   // one entry per shoe part (shoe.js PARTS); `primary` lists item indexes drawn as highlights
   kit: {
@@ -109,7 +120,7 @@ export const CONTENT = {
     headline: "LET'S RUN",
     links: [
       { label: "Email", value: EMAIL, url: `mailto:${EMAIL}` },
-      { label: "Register", value: "Registration TBA", url: mail("TechRun 2027 · Notify me when registration opens") },
+      { label: "Register", value: REGISTER_URL ? "Register now" : "Registration TBA", url: register("TechRun 2027 · Notify me when registration opens") },
       { label: "Partner", value: "Sponsor the run", url: mail("TechRun 2027 · Partnership") },
       { label: "Volunteer", value: "Join the crew", url: mail("TechRun 2027 · Volunteer") },
     ],

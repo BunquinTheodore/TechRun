@@ -1,18 +1,17 @@
 // Scenes 20-24: highlights-rest, showcase-1, showcase-2, partners-rest, blast.
-import { pad, q, qa, esc, count } from "./util.js";
+import { pad, q, qa, esc, count, linkAttrs } from "./util.js";
 import { PALETTE, GRADIENT_STOPS, LIGHT_FIELDS } from "../palette.js";
 
-const ACT_HL = "05 · Highlights";
-const ACT_KITS = "06 · Race Kits";
+const ACT_HL = "04 · Highlights";
+const ACT_KITS = "05 · Race Kit";
 const ACT_PARTNERS = "07 · Partners";
-const ACT_REGISTER = "08 · Register";
+const ACT_REGISTER = "06 · Register";
 // runner GIF: the feet sit ~8% above the bottom of the 512px frame
 const FEET = 0.9;
 
 const ARROW = (px = 34) =>
   `<svg viewBox="0 0 24 24" width="${px}" height="${px}" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="square" aria-hidden="true"><path d="M5 19L19 5M8 5h11v11"/></svg>`;
 const scope = (slug) => `.scene[data-slug="${slug}"]`;
-const linkAttrs = (url) => (/^mailto:/.test(url) ? `href="${esc(url)}"` : `href="${esc(url)}" target="_blank" rel="noopener"`);
 const maskLine = (inner, cls = "") => `<span class="mask"><span class="${cls}">${inner}</span></span>`;
 const photoSrc = (C, key) => (C.assets.photos[key] || key);
 const isSprite = (src) => /\.png$/i.test(src);
@@ -129,7 +128,7 @@ ${S} .hl-badge b{font:900 76px/.9 var(--sans);font-stretch:75%;letter-spacing:-.
 ${S} .hl-badge small{margin-top:8px;max-width:150px;font:700 15px/1.2 var(--mono);letter-spacing:.12em;text-transform:uppercase}`;
 
 function showcase(C, i) {
-  const s = C.showcases[i], nShow = C.showcases.length;
+  const s = C.showcases[i];
   const slug = `showcase-${i + 1}`, S = scope(slug);
   const light = LIGHT_FIELDS.has(s.field);
   const name = s.title.join(" ");
@@ -150,7 +149,7 @@ function showcase(C, i) {
     turn: null, rest: "open the links", restAt: 2.5, shoe: false,
     html: `<style>${showcaseCss(S, light)}</style>
       <div class="hl-ghost" style="left:560px;top:120px">${esc(s.ghost || "")}</div>
-      <div class="hl-eb" style="left:110px;top:110px">${esc(ACT_KITS)} · ${pad(i + 1)}/${pad(nShow)}</div>
+      <div class="hl-eb" style="left:110px;top:110px">${esc(ACT_KITS)}</div>
       <h2 class="hl-ttl" style="left:110px;top:196px">${titleHtml}</h2>
       <div class="hl-pitch" style="left:110px;top:556px">${maskLine(esc(s.pitch))}</div>
       <div class="hl-lab dim" style="left:110px;top:646px">${extras.lab}</div>

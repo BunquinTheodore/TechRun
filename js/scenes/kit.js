@@ -3,7 +3,7 @@ import { PART_CENTER, PARTS } from "../shoe.js";
 import { esc, pad, q, qa } from "./util.js";
 
 const IN = "power3.out", OUT = "power3.in";
-const ACT = "04 · The Kit";
+const ACT = "03 · The Kit";
 const SLUGS = {
   toe: "toe-distances", laces: "laces-race-kit", upper: "upper-finish-line",
   heel: "heel-support", midsole: "midsole-tech", outsole: "outsole-route",

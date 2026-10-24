@@ -1,5 +1,5 @@
 // Scenes 01-05: biometric-scan, access-granted, collapse-to-the-dot, name, word-burst.
-import { pad, q, qa, esc, decode, count } from "./util.js";
+import { pad, q, qa, esc, decode, count, linkAttrs } from "./util.js";
 
 const hash = (n) => { const x = Math.sin(n * 127.1 + 311.7) * 43758.5453; return x - Math.floor(x); };
 
@@ -170,21 +170,23 @@ function collapseAnim(root, tl) {
   tl.from(q(root, ".cd-cap"), { opacity: 0, y: 12, duration: 0.4, ease: "power3.out" }, 1.25);
 }
 
-// ---------- 04 name (hero on lime) ----------
-const NAME_FS = 300;      // TECH / RUN (Tektur 900 condensed)
-const YEAR_FS = 232;      // 2027 (Tiny5), sized to sit under TECH
+// ---------- 04 name (hero on lime): the "first page" with every key detail and the register button ----------
+const NAME_FS = 270;      // TECH / RUN (Tektur 900 condensed)
+const YEAR_FS = 204;      // 2027 (Tiny5), sized to sit under TECH
 const PERIOD_EM = 0.2;    // full stop, relative to YEAR_FS
+const CTA_X = 960;        // register block is centred on the frame
 // pixel bits around the runner's feet (stage px, size, colour token)
 const PIXELS = [
-  [1086, 520, 34, "ink"], [1046, 566, 22, "cyan"], [1130, 596, 18, "orange"], [990, 520, 14, "ink"],
-  [1700, 590, 30, "ink"], [1752, 548, 20, "orange"], [1650, 640, 16, "cyan"], [1790, 640, 14, "ink"],
-  [1380, 640, 22, "ink"], [1420, 604, 14, "cyan"],
+  [1236, 548, 30, "ink"], [1198, 590, 20, "cyan"], [1290, 610, 16, "orange"], [1520, 548, 14, "ink"],
+  [1716, 470, 28, "ink"], [1768, 430, 18, "orange"], [1668, 516, 14, "cyan"], [1800, 520, 12, "ink"],
+  [1420, 600, 20, "ink"], [1460, 566, 12, "cyan"],
 ];
 
 function nameHtml(C) {
-  const B = C.brand, L = B.lines, A = C.assets, O = C.organizer;
+  const B = C.brand, L = B.lines, A = C.assets, O = C.organizer, R = C.register;
   const S = '.scene[data-slug="name"]';
   const px = PIXELS.map(([x, y, s, c]) => `<i class="nm-px" style="left:${x}px;top:${y}px;width:${s}px;height:${s}px;background:var(--${c})"></i>`).join("");
+  const dist = C.categories.map((c) => `<a class="nm-d" ${linkAttrs(c.url)} aria-label="Register for the ${esc(c.name)} ${esc(c.label)}">${esc(c.name)}</a>`).join("");
   return `
 <style>
   ${S} .nm-meta { position:absolute; font:600 20px/1.6 var(--mono); letter-spacing:.22em; text-transform:uppercase; color:var(--ink); white-space:nowrap; }
@@ -194,7 +196,22 @@ function nameHtml(C) {
   ${S} .nm-pw { position:relative; display:inline-block; width:${PERIOD_EM}em; height:${PERIOD_EM}em; margin-left:.02em; margin-bottom:.02em; font-size:${YEAR_FS}px; }
   ${S} .nm-pw .iris { width:3400px; height:3400px; background:var(--ink); z-index:30; margin:0; border-radius:0; }
   ${S} .nm-px { position:absolute; z-index:3; }
-  ${S} .nm-legs { position:absolute; left:880px; top:-70px; width:1120px; height:auto; z-index:2; mix-blend-mode:multiply; }
+  ${S} .nm-legs { position:absolute; left:1000px; top:-70px; width:1000px; height:auto; z-index:2; mix-blend-mode:multiply; }
+  ${S} .nm-cta { position:absolute; left:${CTA_X - 210}px; top:384px; width:420px; z-index:6; display:grid; justify-items:center; gap:22px; text-align:center; }
+  ${S} .nm-cta .eyebrow { color:var(--ink); }
+  ${S} .nm-dists { display:flex; gap:12px; }
+  ${S} a.nm-d { font:400 40px/1 var(--pixel); color:var(--ink); text-decoration:none; border:3px solid var(--ink); padding:14px 20px 10px; min-width:112px;
+    transition:background-color .2s, color .2s; }
+  ${S} a.nm-d:hover, ${S} a.nm-d:focus-visible { background:var(--ink); color:var(--lime); }
+  ${S} a.nm-reg { position:relative; display:flex; align-items:center; justify-content:center; gap:18px; width:420px; height:108px;
+    background:var(--ink); color:var(--lime); text-decoration:none; font:900 44px/1 var(--sans); font-stretch:75%; letter-spacing:.02em;
+    text-transform:uppercase; box-shadow:0 18px 40px rgba(var(--ink-rgb),.28); transition:color .2s, transform .2s; }
+  ${S} a.nm-reg::after { content:""; position:absolute; left:0; right:0; bottom:0; height:8px; background:var(--grad); }
+  ${S} a.nm-reg::before { content:""; position:absolute; inset:0; background:var(--grad); opacity:0; transition:opacity .2s; }
+  ${S} a.nm-reg:hover, ${S} a.nm-reg:focus-visible { color:var(--ink); transform:translateY(-3px); }
+  ${S} a.nm-reg:hover::before, ${S} a.nm-reg:focus-visible::before { opacity:1; }
+  ${S} a.nm-reg span, ${S} a.nm-reg svg { position:relative; }
+  ${S} .nm-note { margin-top:8px; white-space:nowrap; font:600 16px/1.4 var(--mono); letter-spacing:.2em; text-transform:uppercase; color:rgba(var(--ink-rgb),.72); }
 </style>
 <img class="nm-mark" src="${esc(A.markSolid)}" alt="" style="position:absolute;left:112px;top:78px;width:96px;height:96px">
 <div class="nm-meta nm-top" style="left:214px;top:110px">${esc(O.label)} ${esc(B.org)}</div>
@@ -203,7 +220,7 @@ function nameHtml(C) {
 <img class="nm-legs" data-bleed src="${esc(A.runnerLegs)}" alt="">
 ${px}
 
-<div class="nm-block" style="position:absolute;left:130px;top:212px;z-index:5;transform-origin:0 100%">
+<div class="nm-block" style="position:absolute;left:130px;top:236px;z-index:5;transform-origin:0 100%">
   <div class="mega nm-tech"><span class="mask nm-m"><span>${esc(L[0])}</span></span></div>
   <div class="mega nm-tech"><span class="mask nm-m"><span>${esc(L[1])}</span></span></div>
   <div class="nm-row" style="margin-top:22px">
@@ -212,11 +229,19 @@ ${px}
   </div>
 </div>
 
-<div class="nm-title" style="position:absolute;left:1120px;top:716px;width:690px;z-index:4">
+<div class="nm-cta">
+  <div class="eyebrow nm-c">Pick your distance</div>
+  <div class="nm-dists nm-c">${dist}</div>
+  <a class="nm-reg nm-c" ${linkAttrs(R.url)} aria-label="${esc(R.label)}: ${esc(B.title)}"><span>${esc(R.label)}</span>
+    <svg width="34" height="34" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 18 18 6M8 6h10v10" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="square"/></svg></a>
+  <div class="nm-note nm-c">${esc(R.note)}</div>
+</div>
+
+<div class="nm-title" style="position:absolute;left:1240px;top:716px;width:590px;z-index:4">
   <div class="eyebrow">${esc(O.line)}</div>
   <p style="margin:24px 0 0;font:600 40px/1.18 var(--sans);color:var(--ink)">${esc(B.tagline)}</p>
 </div>
-<div class="nm-meta nm-bot" style="left:1120px;top:926px">${esc(C.location.city)}, ${esc(C.location.country)} &nbsp;·&nbsp; ${esc(O.date)}</div>`;
+<div class="nm-meta nm-bot" style="left:1240px;top:900px;white-space:normal;width:590px">${esc(C.location.city)}, ${esc(C.location.country)}<br>${esc(C.location.venue)} &nbsp;·&nbsp; ${esc(O.date)}</div>`;
 }
 
 function nameAnim(root, tl) {
@@ -230,8 +255,10 @@ function nameAnim(root, tl) {
   // runner strides in from the right, pixels pop around the feet
   tl.from(q(root, ".nm-legs"), { x: 260, opacity: 0, duration: 1.0, ease: "power4.out" }, 0.1);
   tl.from(qa(root, ".nm-px"), { scale: 0, duration: 0.2, ease: "steps(2)", stagger: 0.04 }, 0.55);
-  tl.from(q(root, ".nm-title"), { opacity: 0, x: 40, duration: 0.6, ease: "power3.out" }, 0.55);
-  tl.from(q(root, ".nm-bot"), { opacity: 0, y: 16, duration: 0.5, ease: "power3.out" }, 0.75);
+  // register block rises in the middle of the frame, ready by the landing rest (1.5s)
+  tl.from(qa(root, ".nm-c"), { opacity: 0, y: 26, duration: 0.5, ease: "power3.out", stagger: 0.08 }, 0.6);
+  tl.from(q(root, ".nm-title"), { opacity: 0, x: 40, duration: 0.6, ease: "power3.out" }, 0.7);
+  tl.from(q(root, ".nm-bot"), { opacity: 0, y: 16, duration: 0.5, ease: "power3.out" }, 0.85);
   // full stop pops in, then (post rest) swells to flood the frame in ink
   tl.fromTo(iris, { scale: 0 }, { scale: fsW, duration: 0.35, ease: "back.out(3)" }, 0.9);
   tl.fromTo(q(root, ".nm-block"), { scale: 1 }, { scale: 1.035, duration: 1.0, ease: "sine.inOut", immediateRender: false }, 1.55);

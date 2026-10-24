@@ -1,11 +1,18 @@
-// Loads the four scene modules in film order (01-24). A module that fails to load or build is skipped
-// (logged), so one broken file never blanks the whole film.
+// Loads the four scene modules in film order. A module that fails to load or build is skipped (logged),
+// so one broken file never blanks the whole film.
 const FILES = ["./boot.js", "./about.js", "./kit.js", "./highlights.js"];
 const mods = await Promise.all(FILES.map((f) => import(f).catch((e) => { console.error("scene module", f, e); return null; })));
+
+// Short cut of the film: these scenes are left out (their key details live on the hero). Remove a slug to restore it.
+const CUT = new Set([
+  "location", "timezone", "organizer", "distances",
+  "toe-distances", "laces-race-kit", "upper-finish-line", "heel-support", "midsole-tech", "outsole-route",
+  "showcase-2", "partners-rest",
+]);
 
 export function buildAll(C, P) {
   return mods.flatMap((m, i) => {
     if (!m) return [];
-    try { return m.scenes(C, P); } catch (e) { console.error("scene build", FILES[i], e); return []; }
+    try { return m.scenes(C, P).filter((s) => !CUT.has(s.slug)); } catch (e) { console.error("scene build", FILES[i], e); return []; }
   });
 }

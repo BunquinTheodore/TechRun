@@ -4,6 +4,8 @@ export const pad = (n, w = 2) => String(n).padStart(w, "0");
 export const q = (root, sel) => root.querySelector(sel);
 export const qa = (root, sel) => [...root.querySelectorAll(sel)];
 export const esc = (s) => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+// href attributes for a content link: mailto opens in place, web links open a new tab
+export const linkAttrs = (url) => (/^mailto:/.test(url) ? `href="${esc(url)}"` : `href="${esc(url)}" target="_blank" rel="noopener"`);
 export const clamp = (v, a = 0, b = 1) => Math.min(b, Math.max(a, v));
 
 const hash = (n) => { const x = Math.sin(n * 127.1 + 311.7) * 43758.5453; return x - Math.floor(x); };
