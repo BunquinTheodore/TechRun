@@ -23,13 +23,13 @@ export const CONTENT = {
     badge: "assets/img/badge-pixel.png",     // pixel-dot gradient ring + white TR mark, transparent; DARK fields only
     mark: "assets/img/tr-mark.png",          // white + gradient TR mark, transparent; DARK fields only
     markInk: "assets/img/mark-ink.png",      // black + gradient TR mark, transparent; LIGHT fields only
-    markSolid: "assets/img/mark-solid.png",  // solid black TR mark, transparent; LIGHT fields (lime/cyan/orange)
+    markSolid: "assets/img/mark-solid.webp", // solid black TR mark, transparent; LIGHT fields (lime/cyan/orange)
     halftone: "assets/img/halftone-burst.jpg", // 1000x1000 black/grey halftone burst, white mark (texture, framed use)
     covers: {                                // 851x315 social banners: low-res, ONLY inside a framed element <= 900px wide
-      dark: "assets/img/cover-dark.jpg",     // black: runner, pixel staircase, wordmark, tagline
+      dark: "assets/img/cover-dark.webp",    // black: runner, pixel staircase, wordmark, tagline
       halftone: "assets/img/cover-halftone.jpg", // white halftone with wordmark
     },
-    runnerLegs: "assets/img/runner-legs.png", // b/w runner legs cut-out, transparent
+    runnerLegs: "assets/img/runner-legs.webp", // b/w runner legs cut-out, transparent
     stairs: "assets/img/pixel-stairs.png",   // gradient pixel staircase, transparent
     splash: "assets/img/splash.png",         // gradient paint splash strip, transparent
     trophy: "assets/img/trophy.png",         // pixel trophy, transparent
@@ -39,14 +39,14 @@ export const CONTENT = {
     photos: {
       computer: "assets/img/retro-computer.jpg", hills: "assets/img/xp-hills.jpg", runners: "assets/img/runners-80s.jpg",
       paintGuy: "assets/img/paint-guy.jpg", matrix: "assets/img/matrix-kid.jpg", errors: "assets/img/error-windows.jpg",
-      tv: "assets/img/tv-store.jpg", bibs: "assets/img/race-bibs.jpg", singlets: "assets/img/singlets.jpg",
+      tv: "assets/img/tv-store.jpg", bibs: "assets/img/race-bibs.jpg", singlets: "assets/img/singlets.webp",
       sweater: "assets/img/model-sweater.jpg", backpack: "assets/img/backpack.jpg", caps: "assets/img/caps.jpg", crew: "assets/img/crew.jpg",
     },
-    // pixel runners, 512x512 transparent GIFs, 8 frames each
+    // pixel runners, 256x256 transparent animated WebP, 8 frames each (512px GIF masters alongside)
     runners: {
-      cyber: { name: "Cyber", walk: "assets/gif/cyber-walk.gif", run: "assets/gif/cyber-run.gif" },
-      hoodie: { name: "Hoodie", walk: "assets/gif/hoodie-walk.gif", run: "assets/gif/hoodie-run.gif" },
-      cap: { name: "Cap", walk: "assets/gif/cap-walk.gif", run: "assets/gif/cap-run.gif" },
+      cyber: { name: "Cyber", walk: "assets/gif/cyber-walk.webp", run: "assets/gif/cyber-run.webp" },
+      hoodie: { name: "Hoodie", walk: "assets/gif/hoodie-walk.webp", run: "assets/gif/hoodie-run.webp" },
+      cap: { name: "Cap", walk: "assets/gif/cap-walk.webp", run: "assets/gif/cap-run.webp" },
     },
   },
   register: {

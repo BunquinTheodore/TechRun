@@ -1,3 +1,8 @@
+/* Tektur (variable: wdth 75-100, wght 400-900) and Tiny5, latin subsets from Google Fonts (OFL), self-hosted */
+@font-face { font-family: "Tektur"; font-style: normal; font-weight: 400 900; font-stretch: 75% 100%; font-display: swap;
+  src: url(../assets/fonts/tektur-latin.woff2) format("woff2"); }
+@font-face { font-family: "Tiny5"; font-style: normal; font-weight: 400; font-display: swap;
+  src: url(../assets/fonts/tiny5-latin.woff2) format("woff2"); }
 :root {
   /* mirror of js/palette.js; keep the two in sync */
   --ink: #000000; --paper: #ffffff; --lime: #c6f24e; --cyan: #33c7e0; --orange: #f2b84e; --ash: #8c8c8c;

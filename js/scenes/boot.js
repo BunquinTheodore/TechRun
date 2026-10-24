@@ -239,7 +239,7 @@ function nameHtml(C) {
 <div class="nm-meta nm-top" style="left:${NM.metaX}px;top:${NM.metaY}px">${esc(O.label)} ${esc(B.org)}</div>
 <i class="nm-rule" style="position:absolute;left:${NM.m}px;width:${NM.ruleW}px;top:${NM.ruleY}px;height:3px;background:var(--ink);transform-origin:0 50%"></i>
 
-<img class="nm-legs" data-bleed src="${esc(A.runnerLegs)}" alt="" width="1400" height="933" fetchpriority="high">
+<img class="nm-legs" data-bleed src="${esc(A.runnerLegs)}" alt="" width="1000" height="666">
 ${px}
 
 <div class="nm-block" style="position:absolute;left:${NM.m}px;top:${NM.blockY}px;z-index:5;transform-origin:0 100%">

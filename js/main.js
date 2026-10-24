@@ -65,14 +65,27 @@ function makeGrain() {
 // ---------- build scenes ----------
 const endField = (s) => (s.turn ? s.turn[1] : s.field === "quad" ? "ink" : s.field);
 const startField = (s) => (s.field === "quad" ? "ink" : s.field);
-const mountScene = (s) => {
+// Images load just ahead of their scene (and the rest once the film lands), not all at boot, so the
+// opening frames are not queued behind a few hundred KB of later artwork on a phone connection.
+const LOAD_AHEAD = 3;          // scenes past the active one whose images are fetched
+const deferImgs = (html) => html.replace(/<img\b([^>]*?)\ssrc=/g, "<img$1 data-src=");
+function hydrate(scene) {
+  if (!scene || scene.hydrated) return;
+  scene.hydrated = true;
+  for (const img of scene.root.querySelectorAll("img[data-src]")) {
+    img.src = img.dataset.src;
+    img.removeAttribute("data-src");
+  }
+}
+const whenIdle = (fn) => (window.requestIdleCallback ? requestIdleCallback(fn, { timeout: 2000 }) : setTimeout(fn, 200));
+const mountScene = (s, eager) => {
   const root = document.createElement("div");
   root.className = `scene ${s.field}${s.stars && s.field === "ink" ? " starry" : ""}`;
   root.dataset.slug = s.slug;
   if (s.rest) root.dataset.rest = s.rest;
   root.setAttribute("role", "region");
   root.setAttribute("aria-label", s.name);
-  root.innerHTML = s.html || "";
+  root.innerHTML = eager ? s.html || "" : deferImgs(s.html || "");
   stage.insertBefore(root, gunCanvas);
   return root;
 };
@@ -98,13 +111,13 @@ try { defs = buildAll(C, P); } catch (e) { console.error("scenes", e); }
 const scenes = [];
 let acc = 0;
 defs.forEach((s, i) => {
-  const root = mountScene(s);
+  const root = mountScene(s, i === 0);
   const tl = gsap.timeline({ paused: true });
   try { s.anim?.(root, tl, env); } catch (e) { console.error("anim", s.slug, e); }
   const next = defs[i + 1];
   if (next && endField(s) !== startField(next)) addIris(root, tl, s, next);
   tl.set({}, {}, s.dur); // the timeline is exactly as long as the scene
-  scenes.push({ ...s, root, tl, t0: acc, field0: startField(s) });
+  scenes.push({ ...s, root, tl, t0: acc, field0: startField(s), hydrated: i === 0 });
   acc += s.dur;
 });
 const bySlug = Object.fromEntries(scenes.map((s) => [s.slug, s]));
@@ -364,12 +377,19 @@ for (const who of CAST) {
     const src = C.assets?.runners?.[who]?.[gait];
     if (!src) continue;
     const img = new Image();
-    img.alt = ""; img.decoding = "async"; img.draggable = false; img.src = src; // preloads all six
+    img.alt = ""; img.decoding = "async"; img.draggable = false; img.dataset.src = src; // fetched when the film lands
     runner.appendChild(img);
     sprites[`${who}-${gait}`] = img;
   }
 }
 for (const el of [track, runner]) { el.setAttribute("aria-hidden", "true"); document.body.appendChild(el); }
+function loadSprites() {
+  for (const img of Object.values(sprites)) {
+    if (!img.dataset.src) continue;
+    img.src = img.dataset.src;
+    img.removeAttribute("data-src");
+  }
+}
 const rs = { v: 0, lastY: null, gait: "walk", want: "walk", wantFor: 0, face: 1, faceShown: null, key: "", shown: null, x: null, p: null, left: 0, span: 0 };
 
 // the longest act label sets where the track ends, so the runner never reaches #act
@@ -406,6 +426,7 @@ function updateRunner(dt, cueOn) {
   const key = `${castFor(s.act)}-${rs.gait}`;
   if (key !== rs.key && sprites[key]) {
     sprites[rs.key]?.classList.remove("on");
+    if (sprites[key].dataset.src) loadSprites();
     sprites[key].classList.add("on");
     runner.classList.toggle("run", rs.gait === "run");
     rs.key = key;
@@ -432,6 +453,8 @@ function show(time) {
   const idx = scenes.findIndex((s) => time >= s.t0 && time < s.t0 + s.dur);
   const s = scenes[idx < 0 ? scenes.length - 1 : idx];
   if (s !== active) {
+    const at = scenes.indexOf(s);
+    for (let k = at; k <= at + LOAD_AHEAD; k++) hydrate(scenes[k]);
     active?.root.classList.remove("on");
     s.root.classList.add("on");
     active = s;
@@ -491,6 +514,8 @@ function frame(now) {
       autoplay = false;
       document.documentElement.classList.remove("locked");
       lenis.start();
+      loadSprites();
+      whenIdle(() => scenes.forEach(hydrate));
       lenis.scrollTo(0, { immediate: true });
     }
   } else {
@@ -546,7 +571,10 @@ addEventListener("resize", fit);
 matchMedia(PORTRAIT_QUERY).addEventListener("change", (e) => { if (e.matches !== PORTRAIT) location.reload(); });
 loadGun();
 setTimeout(() => { gunReady = true; }, GUN_SAFETY_MS);
-Promise.race([document.fonts.ready, new Promise((r) => setTimeout(r, 2500))]).then(() => {
+// both faces are preloaded in index.html; start the film once they are in (or after the cap below)
+const fontsReady = Promise.all(['900 100px "Tektur"', '400 100px "Tiny5"'].map((f) => document.fonts.load(f)))
+  .catch((e) => console.error("fonts", e));
+Promise.race([fontsReady, new Promise((r) => setTimeout(r, 2500))]).then(() => {
   fit();
   last = performance.now();
   requestAnimationFrame(frame);
