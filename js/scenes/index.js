@@ -6,9 +6,10 @@ const mods = await Promise.all(FILES.map((f) => import(f).catch((e) => { console
 
 // Short cut of the film: these scenes are left out (their key details live on the hero). Remove a slug to restore it.
 // "location" also needs the d3 / topojson scripts put back in index.html.
+// "highlights-rest" (Reasons to run) is back in: it plays between distances-rest and the race kit.
 const CUT = new Set([
   "word-burst", "location", "timezone", "organizer", "distances",
-  "highlights-rest", "showcase-2", "partners-rest",
+  "showcase-2", "partners-rest",
 ]);
 
 export function buildAll(C, P) {
