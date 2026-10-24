@@ -395,8 +395,14 @@ const rs = { v: 0, lastY: null, gait: "walk", want: "walk", wantFor: 0, face: 1,
 // the longest act label sets where the track ends, so the runner never reaches #act
 function measureTrack() {
   const acts = [...new Set(scenes.map((s) => s.act).filter(Boolean))], keep = actEl.textContent;
-  let w = 0;
-  for (const a of acts) { actEl.textContent = a; w = Math.max(w, actEl.offsetWidth); }
+  // all labels in at once, so they cost one layout instead of one per label
+  actEl.replaceChildren(...acts.map((a) => {
+    const line = document.createElement("span");
+    line.style.cssText = "display:block;width:max-content";
+    line.textContent = a;
+    return line;
+  }));
+  const w = Math.max(0, ...[...actEl.children].map((line) => line.offsetWidth));
   actEl.textContent = keep;
   document.documentElement.style.setProperty("--act-w", `${Math.ceil(w)}px`);
   const r = track.getBoundingClientRect();
