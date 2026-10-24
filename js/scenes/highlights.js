@@ -21,7 +21,6 @@ const gradDefs = (id) => `<defs><linearGradient id="${id}" x1="0" y1="0" x2="1" 
 // shared pieces (eyebrow, label, live dot); `S` is the scene scope selector
 const baseCss = (S) => `
 ${S} .hl-eb{position:absolute;display:flex;align-items:center;gap:19px;font:700 20px/1 var(--mono);letter-spacing:.34em;text-transform:uppercase;white-space:nowrap;color:var(--lime)}
-${S} .hl-eb::before{content:"";width:56px;height:2px;background:currentColor}
 ${S}.lime .hl-eb,${S}.cyan .hl-eb,${S}.orange .hl-eb,${S}.paper .hl-eb{color:var(--ink)}
 ${S} .hl-lab{position:absolute;font:700 20px/1 var(--mono);letter-spacing:.3em;text-transform:uppercase;white-space:nowrap}
 ${S} .hl-dot{display:inline-block;width:14px;height:14px;border-radius:50%;background:currentColor;margin-right:14px;vertical-align:1px}`;

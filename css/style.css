@@ -42,7 +42,6 @@ body { cursor: none; font-family: var(--sans); color: var(--paper); }
 .mono { font-family: var(--mono); font-weight: 600; letter-spacing: .22em; text-transform: uppercase; }
 .eyebrow { font: 700 20px/1 var(--mono); letter-spacing: .34em; text-transform: uppercase; color: var(--accent);
   display: flex; align-items: center; gap: 19px; }
-.eyebrow::before { content: ""; width: 56px; height: 2px; background: currentColor; }
 .lime .eyebrow, .cyan .eyebrow, .orange .eyebrow, .paper .eyebrow.ink { color: var(--ink); }
 .ol { -webkit-text-fill-color: transparent; -webkit-text-stroke: 3px currentColor; }
 .ol-accent { color: transparent; -webkit-text-stroke: 3px var(--accent); }
