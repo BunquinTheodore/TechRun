@@ -264,6 +264,8 @@ function nameAnim(root, tl) {
   tl.fromTo(q(root, ".nm-block"), { scale: 1 }, { scale: 1.035, duration: 1.0, ease: "sine.inOut", immediateRender: false }, 1.55);
   tl.fromTo(q(root, ".nm-legs"), { x: 0 }, { x: -60, duration: 1.4, ease: "sine.inOut", immediateRender: false }, 1.55);
   tl.fromTo(iris, { scale: fsW }, { scale: 1, duration: 0.85, ease: "power3.in", immediateRender: false }, 2.5);
+  // the register block sits above the type's stacking context, so it leaves with the flood (and stops taking clicks)
+  tl.fromTo(q(root, ".nm-cta"), { autoAlpha: 1 }, { autoAlpha: 0, duration: 0.35, ease: "power2.in", immediateRender: false }, 2.6);
 }
 
 // ---------- 05 word burst ----------
