@@ -391,6 +391,8 @@ function distancesRestScene(C) {
       tl.from(qa(root, ".dr-run"), { opacity: 0, x: -60, duration: 0.7, ease: "power3.out", stagger: 0.12 }, 0.4);
       tl.from(qa(root, ".dr-i, .dr-meta, .dr-bib"), { opacity: 0, y: 18, duration: 0.6, ease: "power3.out", stagger: 0.03 }, 0.6);
       tl.from(qa(root, ".dr-arrow"), { opacity: 0, duration: 0.5, ease: "power2.out", stagger: 0.1 }, 0.8);
+      // clear the frame just before main.js's iris, so nothing rides above the wipe
+      tl.fromTo(qa(root, ".dr, .eyebrow, .dr-count"), { autoAlpha: 1 }, { autoAlpha: 0, duration: 0.25, ease: "power2.in", immediateRender: false }, 2.25);
     },
   };
 }

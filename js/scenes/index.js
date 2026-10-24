@@ -7,7 +7,7 @@ const mods = await Promise.all(FILES.map((f) => import(f).catch((e) => { console
 // Short cut of the film: these scenes are left out (their key details live on the hero). Remove a slug to restore it.
 const CUT = new Set([
   "word-burst", "location", "timezone", "organizer", "distances",
-  "showcase-2", "partners-rest",
+  "highlights-rest", "showcase-2", "partners-rest",
 ]);
 
 export function buildAll(C, P) {

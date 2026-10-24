@@ -3,9 +3,9 @@ import { pad, q, qa, esc, count, linkAttrs } from "./util.js";
 import { PALETTE, GRADIENT_STOPS, LIGHT_FIELDS } from "../palette.js";
 
 const ACT_HL = "03 · Highlights";
-const ACT_KITS = "04 · Race Kit";
+const ACT_KITS = "03 · Race Kit";
 const ACT_PARTNERS = "07 · Partners";
-const ACT_REGISTER = "05 · Register";
+const ACT_REGISTER = "04 · Register";
 // runner GIF: the feet sit ~8% above the bottom of the 512px frame
 const FEET = 0.9;
 
