@@ -85,8 +85,11 @@ body { cursor: none; font-family: var(--sans); color: var(--paper); }
 #ammo u { width: 8px; height: 20px; border: 1.5px solid currentColor; border-radius: 3px 3px 1px 1px; background: transparent; transition: all .2s; }
 #ammo u.on { background: var(--accent); border-color: var(--accent); box-shadow: 0 0 12px var(--accent); }
 #ammo.light u.on { background: var(--ink); border-color: var(--ink); box-shadow: none; }
-#act { z-index: 41; right: calc(clamp(16px, 2.1vw, 40px) + 34px); bottom: calc(clamp(16px, 2.1vw, 40px) + 2px);
-  font: 600 12px/1 var(--mono); letter-spacing: .26em; text-transform: uppercase; color: rgba(var(--paper-rgb), .62); }
+/* fixed "Powered by [GN Club]" sign-off; its box is centred on the pips / track line (hud-e + 12px) */
+#act { z-index: 41; right: calc(clamp(16px, 2.1vw, 40px) + 34px); bottom: calc(clamp(16px, 2.1vw, 40px) - 1px);
+  display: flex; align-items: center; gap: 10px; white-space: nowrap; transition: opacity .3s;
+  font: 600 11px/1 var(--mono); letter-spacing: .26em; text-transform: uppercase; color: rgba(var(--paper-rgb), .62); }
+#act img { display: block; width: auto; height: 26px; }
 #grain { left: 0; top: 0; width: 300%; height: 300%; z-index: 50; opacity: .1; background-repeat: repeat;
   animation: grainJitter 1.2s steps(8) infinite; }
 @keyframes grainJitter {
@@ -187,6 +190,8 @@ body { cursor: none; font-family: var(--sans); color: var(--paper); }
 @media (max-width: 760px) {
   :root { --track-b: calc(var(--hud-e) + 50px); }
   #track { left: calc(var(--hud-e) + 34px); right: calc(var(--hud-e) + 34px); }
+  #act { gap: 8px; font-size: 10px; letter-spacing: .22em; bottom: calc(var(--hud-e) + 2px); }
+  #act img { height: 20px; }
 }
 @media (prefers-reduced-motion: reduce) { #runner { display: none; } }
 
