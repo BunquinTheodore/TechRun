@@ -508,6 +508,7 @@ window.__shots = scenes;
 
 // ---------- boot ----------
 async function loadGun() {
+  if (!scenes.some((s) => s.shoe)) { gunReady = true; return; } // no 3D scenes in this cut: skip three.js entirely
   try {
     const { mountShoe } = await import("./shoe.js");
     gunReal = await mountShoe(gunCanvas, state, { pixelRatio: gunPixelRatio(), interactive: !coarse });
