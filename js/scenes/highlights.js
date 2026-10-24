@@ -121,6 +121,7 @@ ${S} .hl-links a{display:inline-flex;align-items:center;gap:14px;transition:colo
 ${S} .hl-links a:hover,${S} .hl-links a:focus-visible{${light ? "border-bottom-width:5px" : "color:var(--lime)"}}
 ${S} .hl-win{z-index:3}
 ${S} .hl-win .bar span{padding-left:120px}
+${S} .hl-bib{position:absolute;z-index:3;height:auto;border-radius:10px;box-shadow:0 18px 40px rgba(var(--ink-rgb),.3)}
 ${S} .hl-win .body img{left:0;top:0;width:100%;height:100%}
 ${S} .hl-run{z-index:4;width:192px;height:192px}
 ${S} .hl-badge{position:absolute;z-index:5;color:var(--ink)}
@@ -129,7 +130,7 @@ ${S} .hl-badge .hl-bt{position:absolute;inset:0;display:flex;flex-direction:colu
 ${S} .hl-badge b{font:900 76px/.9 var(--sans);font-stretch:75%;letter-spacing:-.02em;text-transform:uppercase}
 ${S} .hl-badge small{margin-top:8px;max-width:150px;font:700 15px/1.2 var(--mono);letter-spacing:.12em;text-transform:uppercase}${PORTRAIT ? `
 ${S} .hl-ghost{display:none}
-${S} .hl-pitch{width:900px;font-size:38px}
+${S} .hl-pitch{font-size:38px}
 ${S} .hl-stack{width:900px;font-size:26px;line-height:1.35;white-space:normal}
 ${S} .hl-feats span{font-size:28px}
 ${S} .hl-win .bar span{padding-left:10px}
@@ -142,11 +143,20 @@ function showcase(C, i) {
   const name = s.title.join(" ");
   const accentOf = (line) => (s.accent && line.toLowerCase() === String(s.accent).toLowerCase() ? "hl-acc" : "");
   const titleHtml = s.title.map((l) => maskLine(esc(l), accentOf(l))).join("");
-  // desktop: copy left, poster right; portrait: title, poster, then copy
-  const G = lay(
-    { x: 110, ghost: [560, 120], eb: 110, ttl: 196, pitch: 556, lab: 646, extra: 690, stack: 822, links: 904, win: [1120, 360, 700, 345] },
-    { x: 90, ghost: [300, 420], eb: 110, ttl: 170, pitch: 1300, lab: 1430, extra: 1476, stack: 1610, links: 1730, win: [90, 730, 900, 444] },
-  );
+  // desktop: copy left, posters right; portrait: title, posters, then copy.
+  // With bibs (s.bibs) the poster shrinks and the bib cards fan out in a row under it.
+  const two = !!s.bibs?.length;
+  const G = two
+    ? lay(
+      { x: 110, ghost: [560, 120], eb: 110, ttl: 196, pitch: 556, pitchW: 1000, lab: 646, extra: 690, stack: 822, links: 904,
+        win: [1060, 230, 560, 276], bibs: { x: [1030, 1290, 1550], y: [612, 646, 620], w: 250 } },
+      { x: 90, ghost: [300, 420], eb: 100, ttl: 150, pitch: 1390, pitchW: 900, lab: 1530, extra: 1576, stack: 1696, links: 1796,
+        win: [90, 658, 760, 375], bibs: { x: [90, 395, 700], y: [1120, 1146, 1124], w: 290 } },
+    )
+    : lay(
+      { x: 110, ghost: [560, 120], eb: 110, ttl: 196, pitch: 556, pitchW: 1000, lab: 646, extra: 690, stack: 822, links: 904, win: [1120, 360, 700, 345] },
+      { x: 90, ghost: [300, 420], eb: 110, ttl: 170, pitch: 1300, pitchW: 900, lab: 1430, extra: 1476, stack: 1610, links: 1730, win: [90, 730, 900, 444] },
+    );
   const extras = s.strikes
     ? { lab: "Every angle", html: `<div class="hl-strikes" style="left:${G.x}px;top:${G.extra}px">${s.strikes.map((w) =>
         `<span class="hl-strike"><span class="hl-w">${esc(w)}</span><i></i></span>`).join("")}</div>` }
@@ -155,7 +165,7 @@ function showcase(C, i) {
   const links = (s.links || []).map(([label, url]) => `<a ${linkAttrs(url)}>${esc(label)} ${ARROW(20)}</a>`).join("");
   const badge = s.badge || { big: "", small: "" };
   const runner = C.assets.runners[s.runner] || C.assets.runners.cyber;
-  // framed poster: 1400x691 four-view singlet mockup shown inside the Win98 window (body keeps the image's ratio)
+  // framed posters: Win98 windows whose bodies keep each image's ratio (singlets 1400x691, bibs square)
   const [WL, WT, BW, BH] = G.win;
   // badge: desktop overlaps the poster's top-left corner, portrait its top-right (clear of the runner)
   const badgeAt = lay([WL - 120, WT - 150, 240], [WL + BW - 130, WT - 110, 220]);
@@ -167,7 +177,7 @@ function showcase(C, i) {
       <div class="hl-ghost" style="left:${G.ghost[0]}px;top:${G.ghost[1]}px">${esc(s.ghost || "")}</div>
       <div class="hl-eb" style="left:${G.x}px;top:${G.eb}px">${esc(ACT_KITS)}</div>
       <h2 class="hl-ttl" style="left:${G.x}px;top:${G.ttl}px">${titleHtml}</h2>
-      <div class="hl-pitch" style="left:${G.x}px;top:${G.pitch}px">${maskLine(esc(s.pitch))}</div>
+      <div class="hl-pitch" style="left:${G.x}px;top:${G.pitch}px;width:${G.pitchW}px">${maskLine(esc(s.pitch))}</div>
       <div class="hl-lab dim" style="left:${G.x}px;top:${G.lab}px">${extras.lab}</div>
       ${extras.html}
       <div class="hl-stack" style="left:${G.x}px;top:${G.stack}px"><span class="dim">Info / </span>${esc(s.stack)}</div>
@@ -176,6 +186,8 @@ function showcase(C, i) {
         <div class="bar"><span>${esc(s.title.join("_").toLowerCase())}.jpg</span></div>
         <div class="body" style="height:${BH}px"><img class="photo" src="${esc(photoSrc(C, s.img))}" alt="${esc(C.brand.title)} ${esc(name)} poster"></div>
       </div>
+      ${two ? s.bibs.map(([src, alt], k) => `<img class="hl-bib" src="${esc(src)}" alt="${esc(alt)}" width="600" height="375"
+        style="left:${G.bibs.x[k]}px;top:${G.bibs.y[k]}px;width:${G.bibs.w}px">`).join("") : ""}
       <img class="sprite hl-run" src="${esc(runner.run)}" alt="" width="192" height="192" loading="lazy" style="left:${runL}px;top:${WT + 4 - Math.round(192 * FEET)}px">
       ${badgeHtml(`hl-g${i}`, badge.big, badge.small, ...badgeAt)}`,
     anim(root, tl) {
@@ -186,6 +198,11 @@ function showcase(C, i) {
       tl.from(qa(root, ".hl-ttl .mask > span"), { yPercent: 112, duration: 0.85, ease: "expo.out", stagger: 0.12 }, 0.2);
       tl.from(win, { y: 1000, rotation: 12, duration: 1.1, ease: "power3.out" }, 0.2);
       tl.to(win, { rotation: -2.5, duration: 2.7, ease: "none" }, 1.3);
+      // bibs deal in one after another and settle at alternating tilts
+      qa(root, ".hl-bib").forEach((el, k) => {
+        const tilt = [-4, 3, -2][k % 3];
+        tl.fromTo(el, { y: 700, rotation: tilt * 4, opacity: 0 }, { y: 0, rotation: tilt, opacity: 1, duration: 0.9, ease: "power3.out", immediateRender: true }, 0.5 + k * 0.15);
+      });
       // the runner jogs in along the top of the window and rides its tilt
       tl.fromTo(run, { x: -420, y: 1000, rotation: 12 }, { x: -420, y: 0, rotation: 0, duration: 1.1, ease: "power3.out", immediateRender: true }, 0.2);
       tl.to(run, { x: 0, y: -8, rotation: -2.5, duration: 2.7, ease: "none" }, 1.3);

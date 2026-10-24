@@ -99,6 +99,12 @@ export const CONTENT = {
       pitch: "Breathable race singlets in the full TechRun gradient", strikes: ["Front", "Back", "Side"],
       stack: "Sample categories · Registration TBA", badge: { big: "KIT", small: "Race Kit 2027" },
       img: "singlets", runner: "hoodie",
+      // race bib cards fanned out under the poster: [src, alt]
+      bibs: [
+        ["assets/img/bib-3k.webp", "3K race bib 30001"],
+        ["assets/img/bib-5k.webp", "5K race bib 50001"],
+        ["assets/img/bib-10k.webp", "10K race bib 10001"],
+      ],
       links: [["Ask about kits", mail("TechRun 2027 · Race kit")]],
     },
     {
