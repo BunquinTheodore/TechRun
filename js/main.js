@@ -68,13 +68,27 @@ const startField = (s) => (s.field === "quad" ? "ink" : s.field);
 // Images load just ahead of their scene (and the rest once the film lands), not all at boot, so the
 // opening frames are not queued behind a few hundred KB of later artwork on a phone connection.
 const LOAD_AHEAD = 3;          // scenes past the active one whose images are fetched
-const deferImgs = (html) => html.replace(/<img\b([^>]*?)\ssrc=/g, "<img$1 data-src=");
+const deferImgs = (html) => html.replace(/<(img|video)\b([^>]*?)\ssrc=/g, "<$1$2 data-src=");
 function hydrate(scene) {
   if (!scene || scene.hydrated) return;
   scene.hydrated = true;
   for (const img of scene.root.querySelectorAll("img[data-src]")) {
     img.src = img.dataset.src;
     img.removeAttribute("data-src");
+  }
+  for (const video of scene.root.querySelectorAll("video[data-src]")) {
+    const url = video.dataset.src;
+    video.removeAttribute("data-src");
+    video.preload = "auto";
+    if (!video.hasAttribute("data-scrub")) { video.src = url; continue; }
+    // scroll-scrubbed clips play from memory: seekable on any server (no range requests needed) and no frame
+    // waits on the network mid-scroll. A muted play/pause then primes decoding (iOS paints nothing otherwise).
+    fetch(url)
+      .then((r) => (r.ok ? r.blob() : Promise.reject(new Error(`${url} ${r.status}`))))
+      .then((blob) => { video.src = URL.createObjectURL(blob); })
+      .catch((e) => { console.error("scrub video", e); video.src = url; })
+      .then(() => video.play())
+      .then(() => video.pause(), () => {});
   }
 }
 const whenIdle = (fn) => (window.requestIdleCallback ? requestIdleCallback(fn, { timeout: 2000 }) : setTimeout(fn, 200));
@@ -392,19 +406,9 @@ function loadSprites() {
 }
 const rs = { v: 0, lastY: null, gait: "walk", want: "walk", wantFor: 0, face: 1, faceShown: null, key: "", shown: null, x: null, p: null, left: 0, span: 0 };
 
-// the longest act label sets where the track ends, so the runner never reaches #act
+// the fixed "Powered by" sign-off sets where the track ends, so the runner never reaches #act
 function measureTrack() {
-  const acts = [...new Set(scenes.map((s) => s.act).filter(Boolean))], keep = actEl.textContent;
-  // all labels in at once, so they cost one layout instead of one per label
-  actEl.replaceChildren(...acts.map((a) => {
-    const line = document.createElement("span");
-    line.style.cssText = "display:block;width:max-content";
-    line.textContent = a;
-    return line;
-  }));
-  const w = Math.max(0, ...[...actEl.children].map((line) => line.offsetWidth));
-  actEl.textContent = keep;
-  document.documentElement.style.setProperty("--act-w", `${Math.ceil(w)}px`);
+  document.documentElement.style.setProperty("--act-w", `${Math.ceil(actEl.getBoundingClientRect().width)}px`);
   const r = track.getBoundingClientRect();
   rs.left = r.left; rs.span = Math.max(0, r.width - runner.offsetWidth);
   rs.x = rs.p = null;
@@ -448,7 +452,7 @@ function updateRunner(dt, cueOn) {
 
 // ---------- film time ----------
 let t = 0, autoplay = true, frozen = false;
-let lastAmmo = -1, lastAct = null, lastGunVis = null, lastField = null, lastTone = null, starsOpacity = null;
+let lastAmmo = -1, lastGunVis = null, lastField = null, lastTone = null, starsOpacity = null;
 
 function fieldAt(s, st) {
   let f = s.field0;
@@ -489,7 +493,6 @@ function show(time) {
 
   const ammo = clamp(Math.round(s.ammo || 0), 0, pips.length);
   if (ammo !== lastAmmo) { pips.forEach((u, i) => u.classList.toggle("on", i < ammo)); lastAmmo = ammo; }
-  if (s.act !== lastAct) { actEl.textContent = s.act || ""; lastAct = s.act; }
   const gv = !!s.shoe;
   if (gv !== lastGunVis) { gunCanvas.style.visibility = gv ? "" : "hidden"; gunReal?.setVisible(gv); lastGunVis = gv; }
 

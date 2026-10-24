@@ -105,6 +105,9 @@ export const CONTENT = {
         ["assets/img/bib-5k.webp", "5K race bib 50001"],
         ["assets/img/bib-10k.webp", "10K race bib 10001"],
       ],
+      // after the frame, the poster zooms to fill the screen and this 4s clip scrubs with the scroll (scene kit-zoom).
+      // land: 1280x720 with the clip's edges extended sideways; port: 540x960. Keyframe every 6 frames for seeking.
+      zoom: { land: "assets/video/bib-to-singlet-1280.mp4", port: "assets/video/bib-to-singlet-540.mp4", alt: "Bib to singlet" },
       links: [["Ask about kits", mail("TechRun 2027 · Race kit")]],
     },
     {

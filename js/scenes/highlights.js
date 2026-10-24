@@ -1,7 +1,7 @@
 // Scenes 20-24: highlights-rest, showcase-1, showcase-2, partners-rest, blast.
 import { pad, q, qa, esc, count, linkAttrs } from "./util.js";
 import { PALETTE, GRADIENT_STOPS, LIGHT_FIELDS } from "../palette.js";
-import { PORTRAIT, lay } from "../stage.js";
+import { PORTRAIT, SW, SH, lay } from "../stage.js";
 
 const ACT_HL = "03 · Highlights";
 const ACT_KITS = "03 · Race Kit";
@@ -120,7 +120,7 @@ ${S} .hl-links{position:absolute;display:flex;gap:58px}
 ${S} .hl-links a{display:inline-flex;align-items:center;gap:14px;transition:color .2s,border-color .2s${light ? ";border-color:var(--ink)" : ""}}
 ${S} .hl-links a:hover,${S} .hl-links a:focus-visible{${light ? "border-bottom-width:5px" : "color:var(--lime)"}}
 ${S} .hl-win{z-index:3}
-${S} .hl-win .bar span{padding-left:120px}
+${S} .hl-win .bar span{padding-left:${WIN_BAR_PAD}px}
 ${S} .hl-bib{position:absolute;z-index:3;height:auto;border-radius:10px;box-shadow:0 18px 40px rgba(var(--ink-rgb),.3)}
 ${S} .hl-win .body img{left:0;top:0;width:100%;height:100%}
 ${S} .hl-run{z-index:4;width:192px;height:192px}
@@ -133,20 +133,13 @@ ${S} .hl-ghost{display:none}
 ${S} .hl-pitch{font-size:38px}
 ${S} .hl-stack{width:900px;font-size:26px;line-height:1.35;white-space:normal}
 ${S} .hl-feats span{font-size:28px}
-${S} .hl-win .bar span{padding-left:10px}
 ${S} .hl-badge b{font-size:70px}` : ""}`;
 
-function showcase(C, i) {
-  const s = C.showcases[i];
-  const slug = `showcase-${i + 1}`, S = scope(slug);
-  const light = LIGHT_FIELDS.has(s.field);
-  const name = s.title.join(" ");
-  const accentOf = (line) => (s.accent && line.toLowerCase() === String(s.accent).toLowerCase() ? "hl-acc" : "");
-  const titleHtml = s.title.map((l) => maskLine(esc(l), accentOf(l))).join("");
-  // desktop: copy left, posters right; portrait: title, posters, then copy.
-  // With bibs (s.bibs) the poster shrinks and the bib cards fan out in a row under it.
-  const two = !!s.bibs?.length;
-  const G = two
+// Layout of a showcase frame; kit-zoom reuses it so its poster window starts exactly where the showcase left it.
+// desktop: copy left, posters right; portrait: title, posters, then copy.
+// With bibs (s.bibs) the poster shrinks and the bib cards fan out in a row under it.
+function showcaseLayout(s) {
+  return s.bibs?.length
     ? lay(
       { x: 110, ghost: [560, 120], eb: 110, ttl: 196, pitch: 556, pitchW: 1000, lab: 646, extra: 690, stack: 822, links: 904,
         win: [1060, 230, 560, 276], bibs: { x: [1030, 1290, 1550], y: [612, 646, 620], w: 250 } },
@@ -157,6 +150,18 @@ function showcase(C, i) {
       { x: 110, ghost: [560, 120], eb: 110, ttl: 196, pitch: 556, pitchW: 1000, lab: 646, extra: 690, stack: 822, links: 904, win: [1120, 360, 700, 345] },
       { x: 90, ghost: [300, 420], eb: 110, ttl: 170, pitch: 1300, pitchW: 900, lab: 1430, extra: 1476, stack: 1610, links: 1730, win: [90, 730, 900, 444] },
     );
+}
+const WIN_BAR_PAD = lay(120, 10);   // .hl-win title inset (clears the badge on desktop)
+const winTitle = (s) => `${s.title.join("_").toLowerCase()}.jpg`;
+
+function showcase(C, i) {
+  const s = C.showcases[i];
+  const slug = `showcase-${i + 1}`, S = scope(slug);
+  const light = LIGHT_FIELDS.has(s.field);
+  const name = s.title.join(" ");
+  const accentOf = (line) => (s.accent && line.toLowerCase() === String(s.accent).toLowerCase() ? "hl-acc" : "");
+  const titleHtml = s.title.map((l) => maskLine(esc(l), accentOf(l))).join("");
+  const two = !!s.bibs?.length, G = showcaseLayout(s);
   const extras = s.strikes
     ? { lab: "Every angle", html: `<div class="hl-strikes" style="left:${G.x}px;top:${G.extra}px">${s.strikes.map((w) =>
         `<span class="hl-strike"><span class="hl-w">${esc(w)}</span><i></i></span>`).join("")}</div>` }
@@ -165,7 +170,7 @@ function showcase(C, i) {
   const links = (s.links || []).map(([label, url]) => `<a ${linkAttrs(url)}>${esc(label)} ${ARROW(20)}</a>`).join("");
   const badge = s.badge || { big: "", small: "" };
   const runner = C.assets.runners[s.runner] || C.assets.runners.cyber;
-  // framed posters: Win98 windows whose bodies keep each image's ratio (singlets 1400x691, bibs square)
+  // framed poster: a Win98 window whose body keeps the image's ratio (singlets 1400x691)
   const [WL, WT, BW, BH] = G.win;
   // badge: desktop overlaps the poster's top-left corner, portrait its top-right (clear of the runner)
   const badgeAt = lay([WL - 120, WT - 150, 240], [WL + BW - 130, WT - 110, 220]);
@@ -183,7 +188,7 @@ function showcase(C, i) {
       <div class="hl-stack" style="left:${G.x}px;top:${G.stack}px"><span class="dim">Info / </span>${esc(s.stack)}</div>
       <div class="links hl-links" style="left:${G.x}px;top:${G.links}px">${links}</div>
       <div class="win hl-win" style="left:${WL}px;top:${WT}px;width:${BW + 12}px">
-        <div class="bar"><span>${esc(s.title.join("_").toLowerCase())}.jpg</span></div>
+        <div class="bar"><span>${esc(winTitle(s))}</span></div>
         <div class="body" style="height:${BH}px"><img class="photo" src="${esc(photoSrc(C, s.img))}" alt="${esc(C.brand.title)} ${esc(name)} poster"></div>
       </div>
       ${two ? s.bibs.map(([src, alt], k) => `<img class="hl-bib" src="${esc(src)}" alt="${esc(alt)}" width="600" height="375"
@@ -197,7 +202,9 @@ function showcase(C, i) {
       tl.from(q(root, ".hl-eb"), { opacity: 0, x: -40, duration: 0.6, ease: "power3.out" }, 0.1);
       tl.from(qa(root, ".hl-ttl .mask > span"), { yPercent: 112, duration: 0.85, ease: "expo.out", stagger: 0.12 }, 0.2);
       tl.from(win, { y: 1000, rotation: 12, duration: 1.1, ease: "power3.out" }, 0.2);
-      tl.to(win, { rotation: -2.5, duration: 2.7, ease: "none" }, 1.3);
+      // drift tilt; with a zoom next, the drift stops at the hand-off (same rate, so the rest pose is unchanged)
+      const drift = s.zoom ? ZOOM_HANDOFF - 1.3 : 2.7, tilt = -2.5 * (drift / 2.7);
+      tl.to(win, { rotation: tilt, duration: drift, ease: "none" }, 1.3);
       // bibs deal in one after another and settle at alternating tilts
       qa(root, ".hl-bib").forEach((el, k) => {
         const tilt = [-4, 3, -2][k % 3];
@@ -205,7 +212,7 @@ function showcase(C, i) {
       });
       // the runner jogs in along the top of the window and rides its tilt
       tl.fromTo(run, { x: -420, y: 1000, rotation: 12 }, { x: -420, y: 0, rotation: 0, duration: 1.1, ease: "power3.out", immediateRender: true }, 0.2);
-      tl.to(run, { x: 0, y: -8, rotation: -2.5, duration: 2.7, ease: "none" }, 1.3);
+      tl.to(run, { x: 0, y: -8, rotation: tilt, duration: drift, ease: "none" }, 1.3);
       tl.from(q(root, ".hl-badge"), { scale: 0, rotation: -140, duration: 0.8, ease: "back.out(1.7)" }, 0.75);
       tl.fromTo(q(root, ".hl-badge svg"), { rotation: 0 }, { rotation: 300, duration: 4, ease: "none", immediateRender: false }, 0);
       tl.from(q(root, ".hl-pitch .mask > span"), { yPercent: 110, duration: 0.7, ease: "expo.out" }, 0.95);
@@ -219,6 +226,83 @@ function showcase(C, i) {
         tl.from(el, { opacity: 0, y: 30, duration: 0.5, ease: "power3.out" }, 1.3 + k * 0.2));
       tl.from(q(root, ".hl-stack"), { opacity: 0, x: -30, duration: 0.6, ease: "power3.out" }, 1.9);
       tl.from(qa(root, ".hl-links a"), { opacity: 0, y: 20, duration: 0.5, ease: "power3.out", stagger: 0.12 }, 2.1);
+      if (s.zoom) {
+        const rest = qa(root, ".hl-ghost, .hl-eb, .hl-ttl, .hl-pitch, .hl-lab, .hl-strikes, .hl-feats, .hl-stack, .hl-links, .hl-bib, .hl-run, .hl-badge");
+        // all gone by 3.9, a beat before the cut to kit-zoom (whose first frame has only the window)
+        tl.fromTo(rest, { autoAlpha: 1 }, { autoAlpha: 0, duration: 0.38, ease: "power2.in", stagger: 0.02, immediateRender: false }, ZOOM_HANDOFF);
+        tl.fromTo(win, { rotation: tilt }, { rotation: 0, duration: 4 - ZOOM_HANDOFF, ease: "power2.inOut", immediateRender: false }, ZOOM_HANDOFF);
+      }
+    },
+  };
+}
+
+/* ---------------- scene 21b: kit-zoom ---------------- */
+// Picks up the race kit poster where showcase-1 leaves it (window squared up, everything else cleared): the
+// window chrome falls away, the poster grows past the frame, crossfades into the clip and the clip scrubs with
+// the scroll, resting on its last frame before the iris to the register scene.
+const ZOOM_HANDOFF = 3.3;          // showcase time at which the hand-off starts (showcase dur 4.0)
+const ZOOM_BLEED = lay([400, 300], [220, 420]);   // [x, y] stage px the grown poster overshoots each side, covering letterbox
+const KZ = { chrome: [0, 0.35], grow: [0.1, 1.3], fade: [1.15, 0.45], scrub: [1.3, 3.2], restAt: 4.6, dur: 5.3 };
+
+// Seek a paused video to fraction p of its length; one seek in flight at a time, the latest request wins.
+function videoScrubber(video) {
+  const STUCK_MS = 400;            // give up on a seek that never reports back
+  let want = 0, busyAt = 0;
+  const go = () => {
+    const d = video.duration;
+    if (!d || video.readyState < 1) return;
+    const t = Math.min(d - 0.04, Math.max(0, want * d));
+    if (Math.abs(video.currentTime - t) < 0.02) return;
+    busyAt = performance.now();
+    video.currentTime = t;
+  };
+  video.addEventListener("seeked", () => { busyAt = 0; go(); });
+  video.addEventListener("loadedmetadata", go);
+  video.addEventListener("loadeddata", go);
+  video.addEventListener("pause", go);   // after main.js's priming play/pause, return to the scrubbed frame
+  return (p) => {
+    want = p;
+    if (!busyAt || performance.now() - busyAt > STUCK_MS) go();
+  };
+}
+
+function kitZoom(C, s) {
+  const S = scope("kit-zoom"), z = s.zoom;
+  const [WL, WT, BW, BH] = showcaseLayout(s).win;
+  // .win: 2px border + 4px padding, then a 30px bar and 4px gap above the body
+  const BODY = { left: WL + 6, top: WT + 40, width: BW, height: BH };
+  const [bx, by] = ZOOM_BLEED;
+  const FULL = { left: -bx, top: -by, width: SW + 2 * bx, height: SH + 2 * by };
+  const src = PORTRAIT ? z.port : z.land;
+  const box = (r) => `left:${r.left}px;top:${r.top}px;width:${r.width}px;height:${r.height}px`;
+  return {
+    slug: "kit-zoom", name: `Race Kit · ${z.alt}`, act: ACT_KITS, field: s.field, dur: KZ.dur, stars: false, ammo: 3,
+    turn: null, rest: "watch it change", restAt: KZ.restAt, shoe: false,
+    html: `<style>
+${S}{overflow:visible}
+${S} .kz-win{z-index:4}
+${S} .kz-win .bar span{padding-left:${WIN_BAR_PAD}px}
+${S} .kz-frame{position:absolute;z-index:5;overflow:hidden;background:#000}
+${S} .kz-frame video,${S} .kz-frame img{position:absolute;left:0;top:0;width:100%;height:100%;object-fit:cover;display:block}
+</style>
+      <div class="win kz-win" style="left:${WL}px;top:${WT}px;width:${BW + 12}px">
+        <div class="bar"><span>${esc(winTitle(s))}</span></div>
+        <div class="body" style="height:${BH}px"></div>
+      </div>
+      <div class="kz-frame" style="${box(BODY)}">
+        <video src="${esc(src)}" data-scrub muted playsinline preload="none" aria-label="${esc(z.alt)}"></video>
+        <img class="kz-poster" src="${esc(photoSrc(C, s.img))}" alt="">
+      </div>`,
+    anim(root, tl) {
+      const frame = q(root, ".kz-frame"), poster = q(root, ".kz-poster"), video = q(root, "video");
+      const scrub = videoScrubber(video);
+      tl.fromTo(q(root, ".kz-win"), { autoAlpha: 1 }, { autoAlpha: 0, duration: KZ.chrome[1], ease: "power2.out", immediateRender: false }, KZ.chrome[0]);
+      tl.fromTo(frame, { ...BODY }, { ...FULL, duration: KZ.grow[1] - KZ.grow[0], ease: "power3.inOut", immediateRender: false }, KZ.grow[0]);
+      tl.fromTo(poster, { scale: 1 }, { scale: 1.08, duration: KZ.grow[1] - KZ.grow[0] + KZ.fade[1], ease: "power2.inOut", immediateRender: false }, KZ.grow[0]);
+      tl.fromTo(poster, { autoAlpha: 1 }, { autoAlpha: 0, duration: KZ.fade[1], ease: "power1.inOut", immediateRender: false }, KZ.fade[0]);
+      const p = { v: 0 };
+      // scrolling back before the clip renders this at v = 0, which parks the clip on its first frame
+      tl.fromTo(p, { v: 0 }, { v: 1, duration: KZ.scrub[1], ease: "none", immediateRender: false, onUpdate: () => scrub(p.v) }, KZ.scrub[0]);
     },
   };
 }
@@ -354,5 +438,6 @@ ${S} .hl-foot{flex-direction:column;gap:14px;white-space:normal;font-size:22px !
 }
 
 export function scenes(C, P) {
-  return [highlightsRest(C), showcase(C, 0), showcase(C, 1), partnersRest(C), blast(C)];
+  const kit = C.showcases[0];
+  return [highlightsRest(C), showcase(C, 0), ...(kit.zoom ? [kitZoom(C, kit)] : []), showcase(C, 1), partnersRest(C), blast(C)];
 }
