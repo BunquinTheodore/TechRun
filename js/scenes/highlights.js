@@ -144,8 +144,8 @@ function showcase(C, i) {
   const titleHtml = s.title.map((l) => maskLine(esc(l), accentOf(l))).join("");
   // desktop: copy left, poster right; portrait: title, poster, then copy
   const G = lay(
-    { x: 110, ghost: [560, 120], eb: 110, ttl: 196, pitch: 556, lab: 646, extra: 690, stack: 822, links: 904, win: [1170, 300, 652, 487] },
-    { x: 90, ghost: [300, 420], eb: 110, ttl: 170, pitch: 1300, lab: 1430, extra: 1476, stack: 1610, links: 1730, win: [184, 690, 700, 523] },
+    { x: 110, ghost: [560, 120], eb: 110, ttl: 196, pitch: 556, lab: 646, extra: 690, stack: 822, links: 904, win: [1120, 360, 700, 345] },
+    { x: 90, ghost: [300, 420], eb: 110, ttl: 170, pitch: 1300, lab: 1430, extra: 1476, stack: 1610, links: 1730, win: [90, 730, 900, 444] },
   );
   const extras = s.strikes
     ? { lab: "Every angle", html: `<div class="hl-strikes" style="left:${G.x}px;top:${G.extra}px">${s.strikes.map((w) =>
@@ -155,7 +155,7 @@ function showcase(C, i) {
   const links = (s.links || []).map(([label, url]) => `<a ${linkAttrs(url)}>${esc(label)} ${ARROW(20)}</a>`).join("");
   const badge = s.badge || { big: "", small: "" };
   const runner = C.assets.runners[s.runner] || C.assets.runners.cyber;
-  // framed poster: 820x612 source shown inside the Win98 window
+  // framed poster: 1400x691 four-view singlet mockup shown inside the Win98 window (body keeps the image's ratio)
   const [WL, WT, BW, BH] = G.win;
   // badge: desktop overlaps the poster's top-left corner, portrait its top-right (clear of the runner)
   const badgeAt = lay([WL - 120, WT - 150, 240], [WL + BW - 130, WT - 110, 220]);
