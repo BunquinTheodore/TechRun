@@ -3,6 +3,7 @@ import { CONTENT as C } from "./content.js";
 import { buildAll } from "./scenes/index.js";
 import { IDLE_POSE, makePoser, clamp, esc } from "./scenes/util.js";
 import { FIELD_BG, LIGHT_FIELDS, rgba } from "./palette.js";
+import { PORTRAIT, PORTRAIT_QUERY, SW, SH } from "./stage.js";
 
 const SCENE_PX = 850;          // scroll px for a 2.5s scene; others scale with duration (clamped)
 const HOLD_PX = 600;           // extra scroll a resting frame stays put for
@@ -13,6 +14,8 @@ const LANDING = ["name", 1.5];
 const GUN_SAFETY_MS = 15000;   // never leave the boot stuck at 97%
 const COLOR = FIELD_BG;
 const REST_SLUG = "laced-rest";
+// portrait: viewport px kept clear of the frame for the HUD corners (top) and the runner track (bottom)
+const PORTRAIT_TOP = 40, PORTRAIT_BOTTOM = 136;
 
 const $ = (id) => document.getElementById(id);
 const stage = $("stage"), viewport = $("viewport"), gunCanvas = $("gun"), starsCanvas = $("stars");
@@ -24,6 +27,7 @@ let still = calm.matches;
 
 history.scrollRestoration = "manual";
 document.documentElement.classList.add("locked");
+document.documentElement.classList.toggle("portrait", PORTRAIT);
 window.scrollTo(0, 0);
 for (const el of [starsCanvas, gunCanvas, grainEl, cursorEl, hud, cueEl, ammoEl]) el.setAttribute("aria-hidden", "true");
 
@@ -75,15 +79,18 @@ const mountScene = (s) => {
 function addIris(root, tl, s, next) {
   const el = document.createElement("div");
   el.className = "iris";
-  const at = s.irisAt || [960, 540];
+  const at = s.irisAt || [SW / 2, SH / 2];
   const [x, y] = Array.isArray(at) ? at : [at.x, at.y];
   Object.assign(el.style, {
     left: `${x}px`, top: `${y}px`, width: `${IRIS_SIZE}px`, height: `${IRIS_SIZE}px`,
     margin: `${-IRIS_SIZE / 2}px 0 0 ${-IRIS_SIZE / 2}px`, background: COLOR[startField(next)],
   });
   root.appendChild(el);
-  gsap.set(el, { scale: 0.02 });
-  tl.fromTo(el, { scale: 0.02 }, { scale: 1, duration: IRIS_SEC, ease: "power3.in", immediateRender: false }, Math.max(0, s.dur - IRIS_SEC));
+  const at0 = Math.max(0, s.dur - IRIS_SEC);
+  // hidden until the wipe starts, or the parked 2% circle shows as a dot in the middle of the frame
+  gsap.set(el, { scale: 0.02, autoAlpha: 0 });
+  tl.set(el, { autoAlpha: 1 }, at0);
+  tl.fromTo(el, { scale: 0.02 }, { scale: 1, duration: IRIS_SEC, ease: "power3.in", immediateRender: false }, at0);
 }
 
 let defs = [];
@@ -151,8 +158,16 @@ function sizeStars() {
   starsK = k;
 }
 function fit() {
-  const w = innerWidth, h = innerHeight, s = Math.min(w / 1920, h / 1080);
-  view = { s, ox: (w - 1920 * s) / 2, oy: (h - 1080 * s) / 2 };
+  const w = innerWidth, h = innerHeight;
+  if (PORTRAIT) {
+    // fit the frame into the band between the HUD corners and the runner track, so nothing sits under them
+    const avail = Math.max(1, h - PORTRAIT_TOP - PORTRAIT_BOTTOM), s = Math.min(w / SW, avail / SH);
+    view = { s, ox: (w - SW * s) / 2, oy: PORTRAIT_TOP + (avail - SH * s) / 2 };
+  } else {
+    const s = Math.min(w / SW, h / SH);
+    view = { s, ox: (w - SW * s) / 2, oy: (h - SH * s) / 2 };
+  }
+  const s = view.s;
   stage.style.transform = `translate(${view.ox}px, ${view.oy}px) scale(${s})`;
   stage.style.setProperty("--k", String(1 / s));
   document.body.style.height = `${h + totalPx}px`;
@@ -527,6 +542,8 @@ viewport.insertBefore(starsCanvas, stage); // stars sit between the field colour
 stage.style.zIndex = "2";
 fit();
 addEventListener("resize", fit);
+// rotating across the portrait/landscape line swaps the scene layouts, which are built once: reload into the other one
+matchMedia(PORTRAIT_QUERY).addEventListener("change", (e) => { if (e.matches !== PORTRAIT) location.reload(); });
 loadGun();
 setTimeout(() => { gunReady = true; }, GUN_SAFETY_MS);
 Promise.race([document.fonts.ready, new Promise((r) => setTimeout(r, 2500))]).then(() => {

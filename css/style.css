@@ -184,3 +184,10 @@ body { cursor: none; font-family: var(--sans); color: var(--paper); }
   #track { left: calc(var(--hud-e) + 34px); right: calc(var(--hud-e) + 34px); }
 }
 @media (prefers-reduced-motion: reduce) { #runner { display: none; } }
+
+/* ---- portrait (phones): a 1080x1920 frame; scene layouts come from js/stage.js ---- */
+.portrait #stage, .portrait #gun { width: 1080px; height: 1920px; }
+/* the frame is letterboxed on phones: let iris wipes spill into the margin so the field change is seamless */
+.portrait .scene { overflow: visible; }
+.portrait .eyebrow { font-size: 30px; }
+.portrait .links a, .portrait a.lnk { font-size: 28px; }

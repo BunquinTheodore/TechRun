@@ -1,6 +1,7 @@
 // Scenes 20-24: highlights-rest, showcase-1, showcase-2, partners-rest, blast.
 import { pad, q, qa, esc, count, linkAttrs } from "./util.js";
 import { PALETTE, GRADIENT_STOPS, LIGHT_FIELDS } from "../palette.js";
+import { PORTRAIT, lay } from "../stage.js";
 
 const ACT_HL = "03 · Highlights";
 const ACT_KITS = "03 · Race Kit";
@@ -23,7 +24,9 @@ const baseCss = (S) => `
 ${S} .hl-eb{position:absolute;display:flex;align-items:center;gap:19px;font:700 20px/1 var(--mono);letter-spacing:.34em;text-transform:uppercase;white-space:nowrap;color:var(--lime)}
 ${S}.lime .hl-eb,${S}.cyan .hl-eb,${S}.orange .hl-eb,${S}.paper .hl-eb{color:var(--ink)}
 ${S} .hl-lab{position:absolute;font:700 20px/1 var(--mono);letter-spacing:.3em;text-transform:uppercase;white-space:nowrap}
-${S} .hl-dot{display:inline-block;width:14px;height:14px;border-radius:50%;background:currentColor;margin-right:14px;vertical-align:1px}`;
+${S} .hl-dot{display:inline-block;width:14px;height:14px;border-radius:50%;background:currentColor;margin-right:14px;vertical-align:1px}${PORTRAIT ? `
+${S} .hl-eb{font-size:30px}
+${S} .hl-lab{font-size:26px}` : ""}`;
 
 /* ---------------- scene 20: highlights-rest ---------------- */
 function highlightsRest(C) {
@@ -124,7 +127,13 @@ ${S} .hl-badge{position:absolute;z-index:5;color:var(--ink)}
 ${S} .hl-badge svg{position:absolute;inset:0;width:100%;height:100%}
 ${S} .hl-badge .hl-bt{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}
 ${S} .hl-badge b{font:900 76px/.9 var(--sans);font-stretch:75%;letter-spacing:-.02em;text-transform:uppercase}
-${S} .hl-badge small{margin-top:8px;max-width:150px;font:700 15px/1.2 var(--mono);letter-spacing:.12em;text-transform:uppercase}`;
+${S} .hl-badge small{margin-top:8px;max-width:150px;font:700 15px/1.2 var(--mono);letter-spacing:.12em;text-transform:uppercase}${PORTRAIT ? `
+${S} .hl-ghost{display:none}
+${S} .hl-pitch{width:900px;font-size:38px}
+${S} .hl-stack{width:900px;font-size:26px;line-height:1.35;white-space:normal}
+${S} .hl-feats span{font-size:28px}
+${S} .hl-win .bar span{padding-left:10px}
+${S} .hl-badge b{font-size:70px}` : ""}`;
 
 function showcase(C, i) {
   const s = C.showcases[i];
@@ -133,34 +142,42 @@ function showcase(C, i) {
   const name = s.title.join(" ");
   const accentOf = (line) => (s.accent && line.toLowerCase() === String(s.accent).toLowerCase() ? "hl-acc" : "");
   const titleHtml = s.title.map((l) => maskLine(esc(l), accentOf(l))).join("");
+  // desktop: copy left, poster right; portrait: title, poster, then copy
+  const G = lay(
+    { x: 110, ghost: [560, 120], eb: 110, ttl: 196, pitch: 556, lab: 646, extra: 690, stack: 822, links: 904, win: [1170, 300, 652, 487] },
+    { x: 90, ghost: [300, 420], eb: 110, ttl: 170, pitch: 1300, lab: 1430, extra: 1476, stack: 1610, links: 1730, win: [184, 690, 700, 523] },
+  );
   const extras = s.strikes
-    ? { lab: "Every angle", html: `<div class="hl-strikes" style="left:110px;top:690px">${s.strikes.map((w) =>
+    ? { lab: "Every angle", html: `<div class="hl-strikes" style="left:${G.x}px;top:${G.extra}px">${s.strikes.map((w) =>
         `<span class="hl-strike"><span class="hl-w">${esc(w)}</span><i></i></span>`).join("")}</div>` }
-    : { lab: "One bib per distance", html: `<div class="hl-feats" style="left:110px;top:690px">${(s.features || []).map((w, k) =>
+    : { lab: "One bib per distance", html: `<div class="hl-feats" style="left:${G.x}px;top:${G.extra}px">${(s.features || []).map((w, k) =>
         `<span><b>${pad(k + 1)}</b>${esc(w)}</span>`).join("")}</div>` };
   const links = (s.links || []).map(([label, url]) => `<a ${linkAttrs(url)}>${esc(label)} ${ARROW(20)}</a>`).join("");
   const badge = s.badge || { big: "", small: "" };
   const runner = C.assets.runners[s.runner] || C.assets.runners.cyber;
-  // framed poster: 820x612 source shown at 652x487 inside the Win98 window
-  const WL = 1170, WT = 300, BW = 652, BH = 487;
+  // framed poster: 820x612 source shown inside the Win98 window
+  const [WL, WT, BW, BH] = G.win;
+  // badge: desktop overlaps the poster's top-left corner, portrait its top-right (clear of the runner)
+  const badgeAt = lay([WL - 120, WT - 150, 240], [WL + BW - 130, WT - 110, 220]);
+  const runL = lay(WL + BW - 230, WL + 40);
   return {
     slug, name: `Race Kit · ${name}`, act: ACT_KITS, field: s.field, dur: 4.0, stars: false, ammo: 3,
     turn: null, rest: "open the links", restAt: 2.5, shoe: false,
     html: `<style>${showcaseCss(S, light)}</style>
-      <div class="hl-ghost" style="left:560px;top:120px">${esc(s.ghost || "")}</div>
-      <div class="hl-eb" style="left:110px;top:110px">${esc(ACT_KITS)}</div>
-      <h2 class="hl-ttl" style="left:110px;top:196px">${titleHtml}</h2>
-      <div class="hl-pitch" style="left:110px;top:556px">${maskLine(esc(s.pitch))}</div>
-      <div class="hl-lab dim" style="left:110px;top:646px">${extras.lab}</div>
+      <div class="hl-ghost" style="left:${G.ghost[0]}px;top:${G.ghost[1]}px">${esc(s.ghost || "")}</div>
+      <div class="hl-eb" style="left:${G.x}px;top:${G.eb}px">${esc(ACT_KITS)}</div>
+      <h2 class="hl-ttl" style="left:${G.x}px;top:${G.ttl}px">${titleHtml}</h2>
+      <div class="hl-pitch" style="left:${G.x}px;top:${G.pitch}px">${maskLine(esc(s.pitch))}</div>
+      <div class="hl-lab dim" style="left:${G.x}px;top:${G.lab}px">${extras.lab}</div>
       ${extras.html}
-      <div class="hl-stack" style="left:110px;top:822px"><span class="dim">Info / </span>${esc(s.stack)}</div>
-      <div class="links hl-links" style="left:110px;top:904px">${links}</div>
+      <div class="hl-stack" style="left:${G.x}px;top:${G.stack}px"><span class="dim">Info / </span>${esc(s.stack)}</div>
+      <div class="links hl-links" style="left:${G.x}px;top:${G.links}px">${links}</div>
       <div class="win hl-win" style="left:${WL}px;top:${WT}px;width:${BW + 12}px">
         <div class="bar"><span>${esc(s.title.join("_").toLowerCase())}.jpg</span></div>
         <div class="body" style="height:${BH}px"><img class="photo" src="${esc(photoSrc(C, s.img))}" alt="${esc(C.brand.title)} ${esc(name)} poster"></div>
       </div>
-      <img class="sprite hl-run" src="${esc(runner.run)}" alt="" style="left:${WL + BW - 230}px;top:${WT + 4 - Math.round(192 * FEET)}px">
-      ${badgeHtml(`hl-g${i}`, badge.big, badge.small, WL - 120, WT - 150, 240)}`,
+      <img class="sprite hl-run" src="${esc(runner.run)}" alt="" width="192" height="192" loading="lazy" style="left:${runL}px;top:${WT + 4 - Math.round(192 * FEET)}px">
+      ${badgeHtml(`hl-g${i}`, badge.big, badge.small, ...badgeAt)}`,
     anim(root, tl) {
       const win = q(root, ".hl-win"), run = q(root, ".hl-run");
       tl.from(q(root, ".hl-ghost"), { opacity: 0, yPercent: 14, duration: 1.2, ease: "power3.out" }, 0);
@@ -254,7 +271,14 @@ function blast(C) {
   const ct = C.contact, L = C.location;
   const words = String(ct.headline).split(" ");
   const last = words.pop();
-  const headline = `${esc(words.join(" "))} <span class="ol">${esc(last)}</span>`;
+  // portrait breaks the headline onto two lines so it fits the narrow frame
+  const headline = PORTRAIT
+    ? `${maskLine(esc(words.join(" ")))}${maskLine(`<span class="ol">${esc(last)}</span>`)}`
+    : maskLine(`${esc(words.join(" "))} <span class="ol">${esc(last)}</span>`);
+  const G = lay(
+    { x: 100, eb: 92, mega: 140, win: [1420, 150], rows: 380, rowsW: 1720, sprintY: 884, foot: 902 },
+    { x: 90, eb: 110, mega: 170, win: [580, 400], rows: 680, rowsW: 900, sprintY: 1473, foot: 1510 },
+  );
   const rows = ct.links.map((l) => `<a class="hl-row" ${linkAttrs(l.url)}>
       <span class="hl-rl">${esc(l.label)}</span><span class="hl-rv">${esc(l.value)}</span>${ARROW(34)}</a>`).join("");
   const sprinter = C.assets.runners.cap;
@@ -273,19 +297,24 @@ ${S} .hl-row svg{justify-self:end;transition:transform .25s,color .2s}
 ${S} .hl-row:hover svg,${S} .hl-row:focus-visible svg{transform:translate(6px,-6px);color:var(--lime)}
 ${S} .hl-cover{z-index:3}
 ${S} .hl-cover .body img{left:0;top:0;width:100%;height:100%}
-${S} .hl-sprint{z-index:4;width:192px;height:192px}
+${S} .hl-sprint{z-index:4;width:192px;height:192px}${PORTRAIT ? `
+${S} .hl-row{grid-template-columns:1fr 50px;grid-template-rows:auto auto;row-gap:14px;height:150px;align-content:center}
+${S} .hl-rl{grid-row:1;font-size:26px}
+${S} .hl-rv{grid-row:2;font-size:52px}
+${S} .hl-row svg{grid-column:2;grid-row:1 / span 2}
+${S} .hl-foot{flex-direction:column;gap:14px;white-space:normal;font-size:22px !important;line-height:1.35}` : ""}
 </style>
       <div class="iris hl-iris" style="width:2600px;height:2600px;margin:-1300px 0 0 -1300px;background:var(--lime);z-index:0"></div>
       <div class="hl-wrap" style="position:absolute;inset:0;z-index:2;color:var(--paper)">
-        <div class="hl-eb" style="left:100px;top:92px"><span class="hl-dot"></span>${esc(ACT_REGISTER)} · ${esc(C.organizer.date)}</div>
-        <h2 class="mega hl-mega abs" style="left:94px;top:140px;white-space:nowrap">${maskLine(headline)}</h2>
-        <div class="win hl-cover" style="left:1420px;top:150px;width:412px">
+        <div class="hl-eb" style="left:${G.x}px;top:${G.eb}px"><span class="hl-dot"></span>${esc(ACT_REGISTER)} · ${esc(C.organizer.date)}</div>
+        <h2 class="mega hl-mega abs" style="left:${G.x - 6}px;top:${G.mega}px;white-space:nowrap">${headline}</h2>
+        <div class="win hl-cover" style="left:${G.win[0]}px;top:${G.win[1]}px;width:412px">
           <div class="bar"><span>techrun_2027.jpg</span></div>
           <div class="body" style="height:148px"><img class="photo" src="${esc(C.assets.covers.dark)}" alt="${esc(C.brand.title)} banner: ${esc(C.brand.tagline)}"></div>
         </div>
-        <div class="hl-rows abs" style="left:100px;top:380px;width:1720px">${rows}</div>
-        <img class="sprite hl-sprint" data-bleed src="${esc(sprinter.run)}" alt="" style="left:-200px;top:${884 - Math.round(192 * FEET)}px">
-        <div class="hl-foot hl-lab" style="left:100px;right:100px;top:902px;display:flex;justify-content:space-between;gap:40px;letter-spacing:.16em;font-size:17px">
+        <div class="hl-rows abs" style="left:${G.x}px;top:${G.rows}px;width:${G.rowsW}px">${rows}</div>
+        <img class="sprite hl-sprint" data-bleed src="${esc(sprinter.run)}" alt="" width="192" height="192" loading="lazy" style="left:-200px;top:${G.sprintY - Math.round(192 * FEET)}px">
+        <div class="hl-foot hl-lab" style="left:${G.x}px;right:${G.x}px;top:${G.foot}px;display:flex;justify-content:space-between;gap:40px;letter-spacing:.16em;font-size:17px">
           <span>${esc(ct.footer)}</span>
           <span>${esc(L.city)} · ${esc(L.venue)}</span>
         </div>
@@ -296,12 +325,12 @@ ${S} .hl-sprint{z-index:4;width:192px;height:192px}
       tl.set(wrap, { color: PALETTE.paper }, 0);
       tl.set(wrap, { color: PALETTE.ink }, 0.2);
       tl.from(q(root, ".hl-eb"), { opacity: 0, x: -40, duration: 0.6, ease: "power3.out" }, 0.45);
-      tl.from(q(root, ".hl-mega .mask > span"), { yPercent: 115, duration: 0.95, ease: "expo.out" }, 0.4);
+      tl.from(qa(root, ".hl-mega .mask > span"), { yPercent: 115, duration: 0.95, ease: "expo.out" }, 0.4);
       tl.from(q(root, ".hl-cover"), { y: 260, rotation: 8, opacity: 0, duration: 0.9, ease: "power3.out" }, 0.75);
       tl.to(q(root, ".hl-cover"), { rotation: 2, duration: 3.3, ease: "none" }, 1.65);
       qa(root, ".hl-row").forEach((el, k) =>
         tl.from(el, { opacity: 0, x: -70, duration: 0.6, ease: "power3.out" }, 0.9 + k * 0.12));
-      tl.fromTo(q(root, ".hl-sprint"), { x: 0 }, { x: 2350, duration: 3.0, ease: "none", immediateRender: true }, 1.6);
+      tl.fromTo(q(root, ".hl-sprint"), { x: 0 }, { x: lay(2350, 1500), duration: 3.0, ease: "none", immediateRender: true }, 1.6);
       tl.from(q(root, ".hl-foot"), { opacity: 0, y: 20, duration: 0.6, ease: "power3.out" }, 1.7);
     },
   };

@@ -1,6 +1,7 @@
 // Scenes 06-10: location, timezone, organizer, distances, distances-rest.
 import { pad, q, qa, esc, clamp, count, linkAttrs } from "./util.js";
 import { PALETTE, GRADIENT_STOPS, rgba } from "../palette.js";
+import { PORTRAIT, lay } from "../stage.js";
 
 const WORLD_URL = "https://cdn.jsdelivr.net/npm/world-atlas@2.0.2/countries-110m.json";
 const INK = PALETTE.ink;
@@ -348,7 +349,20 @@ const restCss = (ROW) => `
     ${S} .dr-bib small{font:600 18px/1 var(--mono);letter-spacing:.22em;text-transform:uppercase;opacity:.88}
     ${S} .dr-bib .pixel{font-size:48px;line-height:1}
     ${S} .dr-arrow{justify-self:end;transition:transform .25s}
-    ${S} .dr:hover .dr-arrow,${S} .dr:focus-visible .dr-arrow{transform:translate(6px,-6px)}
+    ${S} .dr:hover .dr-arrow,${S} .dr:focus-visible .dr-arrow{transform:translate(6px,-6px)}${PORTRAIT ? `
+    ${S} .dr{width:900px;grid-template-columns:200px 1fr auto;grid-template-rows:auto auto;
+      grid-template-areas:"run name bib" "run meta meta";column-gap:28px;row-gap:18px;align-content:center;padding:0 24px}
+    ${S} .dr-i{display:none}
+    ${S} .dr-run{grid-area:run;align-self:center}
+    ${S} .dr-name{grid-area:name;align-self:end}
+    ${S} .dr-name span{font-size:140px}
+    ${S} .dr-meta{grid-area:meta;padding-right:64px}
+    ${S} .dr-meta b{font-size:32px}
+    ${S} .dr-meta i{font-size:26px;line-height:1.3}
+    ${S} .dr-bib{grid-area:bib;align-self:end;justify-items:end;padding-bottom:12px}
+    ${S} .dr-bib small{font-size:24px}
+    ${S} .dr-bib .pixel{font-size:52px}
+    ${S} .dr-arrow{position:absolute;right:24px;bottom:28px}` : ""}
   </style>`;
 
 function categoryRow(C, c, i, ROW, TOP) {
@@ -370,17 +384,17 @@ function categoryRow(C, c, i, ROW, TOP) {
 
 function distancesRestScene(C) {
   const cats = C.categories.slice(0, 3);
-  const ROW = 230, TOP = 196;
+  const ROW = lay(230, 360), TOP = lay(196, 520), X = lay(90, 90), LW = lay(1740, 900);
   const rows = cats.map((c, i) => categoryRow(C, c, i, ROW, TOP)).join("");
   const lines = Array.from({ length: cats.length + 1 }, (_, i) =>
-    `<div class="abs dr-line" style="left:90px;top:${TOP + i * ROW}px;width:1740px;height:2px;background:var(--paper);opacity:.35;transform-origin:0 50%"></div>`).join("");
+    `<div class="abs dr-line" style="left:${X}px;top:${TOP + i * ROW}px;width:${LW}px;height:2px;background:var(--paper);opacity:.35;transform-origin:0 50%"></div>`).join("");
   return {
     slug: "distances-rest", name: "Categories", act: ACT_DIST, field: "ink", dur: 3.0,
     stars: true, ammo: 1, turn: null, rest: "pick your distance", restAt: 1.7, shoe: false,
     html: `
       ${restCss(ROW)}
-      <div class="abs" style="left:100px;top:112px">${mask(`<span class="eyebrow">Distances</span>`)}</div>
-      <div class="abs mono dim dr-count" style="right:100px;top:116px;font-size:20px">${pad(cats.length)} categories · ${esc(C.brand.title)}</div>
+      <div class="abs" style="left:${lay(100, 90)}px;top:${lay(112, 350)}px">${mask(`<span class="eyebrow">Distances</span>`)}</div>
+      <div class="abs mono dim dr-count" style="${lay("right:100px;top:116px;font-size:20px", "left:90px;top:410px;font-size:26px")}">${pad(cats.length)} categories · ${esc(C.brand.title)}</div>
       ${lines}${rows}`,
     anim(root, tl) {
       root.classList.add("starry");
