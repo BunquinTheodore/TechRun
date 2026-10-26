@@ -1,0 +1,87 @@
+rules_version = '2';
+
+// Paths (see functions/src/types.ts):
+//   originals/{eventId}/{uid}/{photoId}.{ext}  photographer upload, create only, never client readable
+//   scans/{eventId}/{photoId}.jpg              server only (OCR input)
+//   previews/{eventId}/{photoId}.jpg           watermarked, public read
+//   thumbs/{eventId}/{photoId}.jpg             public read
+//   receipts/{orderId}/{file}                  buyer GCash receipt, create only, read by the order's photographer
+//   qr/{uid}.{png|jpg|webp}                    photographer GCash QR, public read
+// Cross service reads below use the Storage service's own access to Firestore; firestore.rules do not apply to them.
+service firebase.storage {
+  match /b/{bucket}/o {
+    function signedIn() { return request.auth != null; }
+    function isPhotographer() { return signedIn() && request.auth.token.photographer == true; }
+    function photographerDoc(uid) { return /databases/(default)/documents/photographers/$(uid); }
+    function orderDoc(orderId) { return /databases/(default)/documents/orders/$(orderId); }
+
+    // Admins turn a photographer off with photographers/{uid}.active = false (revokePhotographer).
+    function isActivePhotographer() {
+      return isPhotographer()
+        && firestore.exists(photographerDoc(request.auth.uid))
+        && firestore.get(photographerDoc(request.auth.uid)).data.active == true;
+    }
+
+    function isImage(maxBytes) {
+      return request.resource.size > 0
+        && request.resource.size <= maxBytes
+        && request.resource.contentType.matches('image/(jpeg|png|webp)');
+    }
+
+    // The uid segment is the uploader (the trigger trusts it), so it must be the signed in user.
+    // The photo id is the file name stem: a random UUID from the upload page, never reused. No overwrites.
+    // HEIC is not accepted: the server image library cannot decode it.
+    match /originals/{eventId}/{uid}/{fileName} {
+      allow read: if false;
+      allow create: if request.auth != null
+        && request.auth.uid == uid
+        && isActivePhotographer()
+        && resource == null
+        && eventId.matches('^[A-Za-z0-9_-]{1,64}$')
+        && fileName.matches('^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}[.](jpg|jpeg|png|webp)$')
+        && !firestore.exists(/databases/(default)/documents/photos/$(fileName.split('[.]')[0]))
+        && isImage(25 * 1024 * 1024);
+      allow update, delete: if false;
+    }
+
+    match /previews/{eventId}/{fileName} {
+      allow read: if true;
+      allow write: if false;
+    }
+
+    match /thumbs/{eventId}/{fileName} {
+      allow read: if true;
+      allow write: if false;
+    }
+
+    // Buyers (no sign in) upload while the order waits for payment or was rejected. The order id is a random
+    // Firestore id only the buyer and the photographer know; submitReceipt then checks the access token.
+    match /receipts/{orderId}/{fileName} {
+      allow create: if resource == null
+        && orderId.matches('^[A-Za-z0-9_-]{1,128}$')
+        && fileName.matches('^[A-Za-z0-9_-]{1,64}[.](jpg|jpeg|png|webp)$')
+        && isImage(10 * 1024 * 1024)
+        && firestore.exists(orderDoc(orderId))
+        && firestore.get(orderDoc(orderId)).data.status in ['awaiting_payment', 'rejected'];
+      allow read: if signedIn()
+        && firestore.exists(orderDoc(orderId))
+        && firestore.get(orderDoc(orderId)).data.photographerUid == request.auth.uid;
+      allow update, delete: if false;
+    }
+
+    // One QR per photographer, replaceable. Public so the order page can show it. Active photographers only:
+    // the claim stays in the ID token for up to an hour after a revoke, the active flag does not.
+    match /qr/{fileName} {
+      allow read: if true;
+      allow create, update: if isActivePhotographer()
+        && fileName.matches('^[A-Za-z0-9_-]{1,128}[.](png|jpg|webp)$')
+        && fileName.split('[.]')[0] == request.auth.uid
+        && isImage(5 * 1024 * 1024);
+      allow delete: if isActivePhotographer() && fileName.split('[.]')[0] == request.auth.uid;
+    }
+
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}

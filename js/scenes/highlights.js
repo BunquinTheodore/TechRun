@@ -315,8 +315,8 @@ function blast(C) {
     ? `${maskLine(esc(words.join(" ")))}${maskLine(`<span class="ol">${esc(last)}</span>`)}`
     : maskLine(`${esc(words.join(" "))} <span class="ol">${esc(last)}</span>`);
   const G = lay(
-    { x: 100, eb: 92, mega: 140, win: [1420, 150], rows: 380, rowsW: 1720, sprintY: 884, foot: 902 },
-    { x: 90, eb: 30, mega: 76, win: [580, 300], rows: 548, rowsW: 900, sprintY: 1240, foot: 1262 },
+    { x: 100, eb: 92, mega: 140, win: [1420, 150], rows: 380, rowsW: 1720, photos: 750, sprintY: 884, foot: 902 },
+    { x: 90, eb: 30, mega: 76, win: [580, 300], rows: 548, rowsW: 900, photos: 1100, sprintY: 1240, foot: 1262 },
   );
   const rows = ct.links.map((l) => `<a class="hl-row" ${linkAttrs(l.url)}>
       <span class="hl-rl">${esc(l.label)}</span><span class="hl-rv">${esc(l.value)}</span>${ARROW(34)}</a>`).join("");
@@ -334,6 +334,13 @@ ${S} .hl-rl{font:700 20px/1 var(--mono);letter-spacing:.24em;text-transform:uppe
 ${S} .hl-rv{font:900 46px/1 var(--sans);font-stretch:75%;letter-spacing:-.01em;text-transform:uppercase;white-space:nowrap}
 ${S} .hl-row svg{justify-self:end;transition:transform .25s,color .2s}
 ${S} .hl-row:hover svg,${S} .hl-row:focus-visible svg{transform:translate(6px,-6px);color:var(--lime)}
+${S} a.hl-photos{position:absolute;display:inline-flex;align-items:center;gap:18px;height:88px;padding:0 44px;border-radius:999px;overflow:hidden;
+  background:var(--ink);color:var(--paper);text-decoration:none;font:900 34px/1 var(--sans);font-stretch:75%;letter-spacing:.02em;text-transform:uppercase;
+  white-space:nowrap;transition:color .2s,transform .25s}
+${S} a.hl-photos::before{content:"";position:absolute;inset:0;background:var(--grad);opacity:0;transition:opacity .2s}
+${S} a.hl-photos span,${S} a.hl-photos svg{position:relative}
+${S} a.hl-photos:hover,${S} a.hl-photos:focus-visible{color:var(--ink);transform:translateY(-3px)}
+${S} a.hl-photos:hover::before,${S} a.hl-photos:focus-visible::before{opacity:1}
 ${S} .hl-cover{z-index:3}
 ${S} .hl-cover .body img{left:0;top:0;width:100%;height:100%}
 ${S} .hl-sprint{z-index:4;width:192px;height:192px}${PORTRAIT ? `
@@ -341,6 +348,7 @@ ${S} .hl-row{grid-template-columns:1fr 50px;grid-template-rows:auto auto;row-gap
 ${S} .hl-rl{grid-row:1;font-size:26px}
 ${S} .hl-rv{grid-row:2;font-size:52px}
 ${S} .hl-row svg{grid-column:2;grid-row:1 / span 2}
+${S} a.hl-photos{height:104px;padding:0 52px;font-size:40px}
 ${S} .hl-foot{flex-direction:column;gap:14px;white-space:normal;font-size:22px !important;line-height:1.35}` : ""}
 </style>
       <div class="iris hl-iris" style="width:2600px;height:2600px;margin:-1300px 0 0 -1300px;background:var(--lime);z-index:0"></div>
@@ -352,6 +360,7 @@ ${S} .hl-foot{flex-direction:column;gap:14px;white-space:normal;font-size:22px !
           <div class="body" style="height:148px"><img class="photo" src="${esc(C.assets.covers.dark)}" alt="${esc(C.brand.title)} banner: ${esc(C.brand.tagline)}"></div>
         </div>
         <div class="hl-rows abs" style="left:${G.x}px;top:${G.rows}px;width:${G.rowsW}px">${rows}</div>
+        <a class="hl-photos" ${linkAttrs(C.photos.url)} style="left:${G.x}px;top:${G.photos}px"><span>${esc(C.photos.label)}</span>${ARROW(28)}</a>
         <img class="sprite hl-sprint" data-bleed src="${esc(sprinter.run)}" alt="" width="192" height="192" loading="lazy" style="left:-200px;top:${G.sprintY - Math.round(192 * FEET)}px">
         <div class="hl-foot hl-lab" style="left:${G.x}px;right:${G.x}px;top:${G.foot}px;display:flex;justify-content:space-between;gap:40px;letter-spacing:.16em;font-size:17px">
           <span>${esc(ct.footer)}</span>
@@ -369,6 +378,7 @@ ${S} .hl-foot{flex-direction:column;gap:14px;white-space:normal;font-size:22px !
       tl.to(q(root, ".hl-cover"), { rotation: 2, duration: 3.3, ease: "none" }, 1.65);
       qa(root, ".hl-row").forEach((el, k) =>
         tl.from(el, { opacity: 0, x: -70, duration: 0.6, ease: "power3.out" }, 0.9 + k * 0.12));
+      tl.from(q(root, ".hl-photos"), { opacity: 0, y: 30, duration: 0.6, ease: "back.out(1.6)" }, 1.45);
       tl.fromTo(q(root, ".hl-sprint"), { x: 0 }, { x: lay(2350, 1500), duration: 3.0, ease: "none", immediateRender: true }, 1.6);
       tl.from(q(root, ".hl-foot"), { opacity: 0, y: 20, duration: 0.6, ease: "power3.out" }, 1.7);
     },

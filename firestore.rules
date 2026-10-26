@@ -1,0 +1,57 @@
+rules_version = '2';
+
+// TechRun 2027 race photos.
+// All writes go through Cloud Functions (Admin SDK bypasses these rules). No client writes anywhere.
+// Custom claims: admin == true (organisers), photographer == true (invited photographers).
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() { return request.auth != null; }
+    function isAdmin() { return signedIn() && request.auth.token.admin == true; }
+
+    // Event name and date.
+    match /events/{eventId} {
+      allow read: if true;
+      allow write: if false;
+    }
+
+    // Registered bib list. Admin only (registration data).
+    match /bibs/{bibId} {
+      allow read: if isAdmin();
+      allow write: if false;
+    }
+
+    // Public photo index: safe fields only (no original path, generic error code only).
+    match /photos/{photoId} {
+      allow read: if true;
+      allow write: if false;
+
+      // Server only: originalPath, original file name, OCR tokens, pipeline errors.
+      match /private/{docId} {
+        allow read, write: if false;
+      }
+    }
+
+    // Public photographer profile: name, credit, active, gcashName, gcashNumber, qrPath.
+    match /photographers/{uid} {
+      allow read: if true;
+      allow write: if false;
+
+      // Server only: email, invitedBy, invitedAt.
+      match /private/{docId} {
+        allow read, write: if false;
+      }
+    }
+
+    // Orders: only the order's photographer may read (dashboard list; queries must filter photographerUid == uid).
+    // Buyers go through the token checked callables (getOrder, submitReceipt, getDownloads).
+    match /orders/{orderId} {
+      allow read: if signedIn() && resource.data.photographerUid == request.auth.uid;
+      allow write: if false;
+    }
+
+    // gcashRefs/, mail/ (Trigger Email queue) and rateLimits/ are server only and fall through to the deny below.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

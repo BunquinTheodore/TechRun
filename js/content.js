@@ -124,6 +124,8 @@ export const CONTENT = {
     { title: "Your Brand Here", issuer: "Tech partner", url: mail("TechRun 2027 · Tech partnership") },
     { title: "Your Brand Here", issuer: "Community partner", url: mail("TechRun 2027 · Community partnership") },
   ],
+  // race photo search, upload and downloads (photos/*.html)
+  photos: { url: "photos/", label: "Find your race photos" },
   contact: {
     headline: "LET'S RUN",
     links: [

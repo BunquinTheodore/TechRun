@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="en" class="ph">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Photo Admin | TechRun</title>
+  <meta name="description" content="TechRun 2027 race photos: admin setup for bibs, photographer invites and the manual review queue." />
+  <meta name="robots" content="noindex" />
+  <meta name="color-scheme" content="dark" />
+  <link rel="icon" type="image/png" href="../assets/img/favicon.png" />
+  <link rel="stylesheet" href="../css/style.css" />
+  <link rel="stylesheet" href="../css/photos.css" />
+  <style>
+    /* admin page only; colours through tokens */
+    .ad-panel { padding: 20px; border: 1px solid var(--ph-line); border-radius: var(--ph-radius); background: rgba(var(--paper-rgb), .02); }
+    .ad-grid2 { display: grid; gap: 16px; }
+    @media (min-width: 900px) { .ad-grid2 { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+    .ad-form { display: grid; gap: 14px; }
+    .ad-review { grid-template-columns: minmax(0, 1fr); }
+    @media (min-width: 640px) { .ad-review { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+    @media (min-width: 1000px) { .ad-review { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+    .ad-review .ph-card > a { cursor: zoom-in; }
+    .ad-tag { display: grid; gap: 10px; padding: 0 10px 12px; }
+    .ad-tag .ph-input { min-height: 40px; padding: 8px 10px; }
+    .ad-tag .ph-chip { cursor: pointer; background: transparent; color: inherit; }
+    .ad-tag .ph-chip:hover { border-color: var(--accent); }
+  </style>
+</head>
+<body class="ph">
+  <header class="ph-header">
+    <div class="ph-wrap">
+      <a class="ph-brand" href="../">TechRun <span class="pixel">2027</span></a>
+      <nav class="ph-nav" aria-label="Staff">
+        <a href="./">Find photos</a>
+        <a href="upload.html">Upload</a>
+        <a href="admin.html" aria-current="page">Admin</a>
+        <span id="who" class="ph-hidden"></span>
+        <button id="signout" class="ph-btn small ph-hidden" type="button">Sign out</button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="ph-main ph-wrap">
+    <h1 class="ph-title">Photo admin</h1>
+    <p class="ph-lead">Setup only: registered bibs, photographer invites and the manual tagging queue. Orders are handled by each photographer on their own dashboard.</p>
+
+    <div id="config-note" class="ph-note warn ph-hidden" role="status">
+      <strong>Not connected yet.</strong> The Firebase web config is still a placeholder in js/photos/firebase.js.
+    </div>
+    <div id="msg" class="ph-note ph-hidden" role="status" aria-live="polite"></div>
+
+    <section id="signin" class="ph-section ph-hidden" aria-labelledby="signin-h">
+      <h2 id="signin-h" class="ph-h2">Sign in</h2>
+      <div class="ph-row">
+        <button id="google" class="ph-btn primary" type="button">Sign in with Google</button>
+      </div>
+      <form id="email-form" class="ph-section" novalidate>
+        <label class="ph-label" for="email">Or get a sign in link by email</label>
+        <div class="ph-row">
+          <div class="ph-grow"><input id="email" class="ph-input" type="email" autocomplete="email" required placeholder="you@example.com" /></div>
+          <button id="email-btn" class="ph-btn" type="submit">Send link</button>
+        </div>
+      </form>
+    </section>
+
+    <section id="denied" class="ph-section ph-hidden" aria-labelledby="denied-h">
+      <h2 id="denied-h" class="ph-h2">Admins only</h2>
+      <p class="ph-lead">This account does not have the admin role. If it was just granted, check again.</p>
+      <button id="recheck" class="ph-btn" type="button">Check again</button>
+    </section>
+
+    <div id="app" class="ph-hidden">
+      <section class="ph-section" aria-label="Event">
+        <div class="ph-row">
+          <div class="ph-grow">
+            <label class="ph-label" for="event">Event</label>
+            <select id="event" class="ph-input"></select>
+          </div>
+          <button id="reload-events" class="ph-btn" type="button">Reload</button>
+        </div>
+      </section>
+
+      <div class="ad-grid2 ph-section">
+        <!-- bib import -->
+        <section class="ad-panel" aria-labelledby="bibs-h">
+          <h2 id="bibs-h" class="ph-h2">Import bibs</h2>
+          <p class="ph-lead">CSV from the registration export with a bib column and a distance column (3K, 5K or 10K). Comma, semicolon or tab separated, header row optional. The server checks every row and lists the ones it skips.</p>
+          <form id="bibs-form" class="ad-form" novalidate>
+            <div>
+              <label class="ph-label" for="bibs-file">CSV file</label>
+              <input id="bibs-file" class="ph-input" type="file" accept=".csv,text/csv" required />
+            </div>
+            <div id="bibs-preview" class="ph-note ph-hidden"></div>
+            <button id="bibs-btn" class="ph-btn primary" type="submit" disabled>Import</button>
+          </form>
+          <div id="bibs-result" class="ph-section ph-hidden"></div>
+        </section>
+
+        <!-- invite -->
+        <section class="ad-panel" aria-labelledby="invite-h">
+          <h2 id="invite-h" class="ph-h2">Invite photographer</h2>
+          <p class="ph-lead">Gives the account the photographer role. They sign in on the upload page with this email.</p>
+          <form id="invite-form" class="ad-form" novalidate>
+            <div>
+              <label class="ph-label" for="inv-email">Email</label>
+              <input id="inv-email" class="ph-input" type="email" autocomplete="off" required />
+            </div>
+            <div>
+              <label class="ph-label" for="inv-name">Name</label>
+              <input id="inv-name" class="ph-input" type="text" autocomplete="off" maxlength="80" required />
+            </div>
+            <div>
+              <label class="ph-label" for="inv-credit">Credit line shown on photos</label>
+              <input id="inv-credit" class="ph-input" type="text" autocomplete="off" maxlength="80" required />
+            </div>
+            <button id="invite-btn" class="ph-btn primary" type="submit">Send invite</button>
+          </form>
+        </section>
+      </div>
+
+      <!-- review queue -->
+      <section class="ph-section" aria-labelledby="review-h">
+        <div class="ph-row" style="justify-content: space-between; align-items: center;">
+          <h2 id="review-h" class="ph-h2">Review queue</h2>
+          <button id="review-refresh" class="ph-btn small" type="button">Refresh</button>
+        </div>
+        <p class="ph-lead">Photos the scanner could not tag with confidence, or could not process. Type the bibs you can see, separated by spaces or commas, or mark the photo as having no visible bibs.</p>
+        <ul id="review" class="ph-grid ad-review" aria-live="polite"></ul>
+        <p id="review-empty" class="ph-empty ph-hidden">Nothing to review.</p>
+        <div class="ph-section" style="text-align: center;">
+          <button id="review-more" class="ph-btn ph-hidden" type="button">Load more</button>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <footer class="ph-footer">
+    <div class="ph-wrap">TechRun 2027 photo admin. Every change goes through a server function that checks the admin role.</div>
+  </footer>
+
+  <script type="module" src="../js/photos/admin.js"></script>
+</body>
+</html>

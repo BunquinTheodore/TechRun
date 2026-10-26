@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="en" class="ph">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Your Order | TechRun 2027</title>
+  <meta name="description" content="Pay for your TechRun 2027 race photos by GCash, upload your receipt and download the originals." />
+  <meta name="robots" content="noindex" />
+  <meta name="referrer" content="no-referrer" />
+  <meta name="color-scheme" content="dark" />
+  <link rel="icon" type="image/png" href="../assets/img/favicon.png" />
+  <link rel="preload" href="../assets/fonts/tektur-latin.woff2" as="font" type="font/woff2" crossorigin />
+  <link rel="preload" href="../assets/fonts/tiny5-latin.woff2" as="font" type="font/woff2" crossorigin />
+  <link rel="stylesheet" href="../css/style.css" />
+  <link rel="stylesheet" href="../css/photos.css" />
+  <script type="module" src="../js/photos/order.js"></script>
+</head>
+<body class="ph">
+  <a class="ph-sr" href="#main">Skip to content</a>
+  <header class="ph-header">
+    <div class="ph-wrap">
+      <a class="ph-brand" href="../">
+        <img src="../assets/img/tr-mark.png" alt="" width="32" height="32" />
+        <span>TechRun <span class="pixel">2027</span></span>
+      </a>
+      <nav class="ph-nav" aria-label="Photos">
+        <a href="./">Race photos</a>
+        <a href="../">Back to the run</a>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main" class="ph-main">
+    <div class="ph-wrap">
+      <span class="ph-label">Your photo order</span>
+      <h1 class="ph-title">Order <span id="order-code" class="grad-text">photos</span></h1>
+      <p id="order-lead" class="ph-lead">Pay the photographer by GCash, upload your receipt, and your full resolution
+        photos unlock here once they confirm it.</p>
+
+      <div id="status" class="ph-note" role="status" aria-live="polite">Loading your order...</div>
+      <div id="actions" class="ph-row ph-hidden" style="margin:16px 0">
+        <button id="refresh" class="ph-btn" type="button">Check again</button>
+      </div>
+
+      <ol id="steps" class="ph-steps ph-hidden" aria-label="Order progress">
+        <li data-step="awaiting_payment"><span class="ph-step-n" aria-hidden="true">1</span><span class="name">Awaiting payment</span><span class="state ph-sr"></span></li>
+        <li data-step="submitted"><span class="ph-step-n" aria-hidden="true">2</span><span class="name">Receipt submitted</span><span class="state ph-sr"></span></li>
+        <li data-step="done"><span class="ph-step-n" aria-hidden="true">3</span><span class="name">Approved</span><span class="state ph-sr"></span></li>
+      </ol>
+
+      <section id="pay-section" class="ph-section ph-hidden" aria-labelledby="pay-title">
+        <h2 id="pay-title" class="ph-h2">Pay by GCash</h2>
+        <div class="ph-pay">
+          <figure id="qr-box" class="ph-qr">
+            <img id="qr-img" alt="" width="280" height="280" />
+            <figcaption id="qr-caption">Scan with GCash</figcaption>
+          </figure>
+          <dl class="ph-facts">
+            <div class="ph-fact">
+              <dt>Amount</dt>
+              <dd><span id="pay-amount" class="big"></span>
+                <button class="ph-btn small ph-copy" type="button" data-copy="amount">Copy</button></dd>
+            </div>
+            <div class="ph-fact">
+              <dt>GCash name</dt>
+              <dd><span id="pay-name"></span>
+                <button class="ph-btn small ph-copy" type="button" data-copy="name">Copy</button></dd>
+            </div>
+            <div class="ph-fact">
+              <dt>GCash number</dt>
+              <dd><span id="pay-number" class="mono"></span>
+                <button class="ph-btn small ph-copy" type="button" data-copy="number">Copy</button></dd>
+            </div>
+            <div class="ph-fact">
+              <dt>Message in GCash</dt>
+              <dd><span id="pay-code" class="mono"></span>
+                <button class="ph-btn small ph-copy" type="button" data-copy="code">Copy</button></dd>
+            </div>
+          </dl>
+        </div>
+        <p id="copy-status" class="ph-sr" role="status" aria-live="polite"></p>
+        <ol class="ph-howto">
+          <li>Open GCash and scan the QR code, or send money to the number above.</li>
+          <li>Send exactly <strong id="howto-amount"></strong> and type <strong id="howto-code"></strong> in the message.</li>
+          <li>Screenshot the receipt GCash shows you, then upload it below with the reference number.</li>
+        </ol>
+      </section>
+
+      <section id="receipt-section" class="ph-section ph-hidden" aria-labelledby="receipt-title">
+        <h2 id="receipt-title" class="ph-h2">Upload your receipt</h2>
+        <form id="receipt-form" novalidate>
+          <div class="ph-row">
+            <div class="ph-grow">
+              <label class="ph-label" for="receipt-file">Receipt screenshot (JPG, PNG or WEBP, up to 10 MB)</label>
+              <input id="receipt-file" name="receipt" class="ph-input" type="file"
+                accept="image/jpeg,image/png,image/webp" aria-describedby="receipt-error" required />
+            </div>
+            <div class="ph-grow">
+              <label class="ph-label" for="gcash-ref">GCash reference number (13 digits)</label>
+              <input id="gcash-ref" name="ref" class="ph-input mono-input" type="text" inputmode="numeric"
+                autocomplete="off" spellcheck="false" maxlength="20" placeholder="1234 567 891234"
+                aria-describedby="ref-error" required />
+            </div>
+          </div>
+          <img id="receipt-preview" class="ph-receipt-preview ph-hidden" alt="Preview of your receipt" />
+          <p id="receipt-error" class="ph-note warn ph-hidden" role="alert"></p>
+          <p id="ref-error" class="ph-note warn ph-hidden" role="alert"></p>
+          <div id="upload-progress" class="ph-progress ph-hidden" style="margin-top:16px">
+            <div class="track"><div class="fill"></div></div>
+            <div class="info"><span>Uploading receipt</span><span id="upload-pct">0%</span></div>
+          </div>
+          <div class="ph-row" style="margin-top:16px">
+            <button id="receipt-submit" class="ph-btn primary" type="submit">Send receipt</button>
+          </div>
+        </form>
+      </section>
+
+      <section id="files-section" class="ph-section ph-hidden" aria-labelledby="files-title">
+        <h2 id="files-title" class="ph-h2">Downloads</h2>
+        <p id="expires" class="ph-label"></p>
+        <ul id="files" class="ph-grid" aria-label="Photo downloads"></ul>
+        <div class="ph-row" style="margin-top:16px">
+          <button id="fresh-links" class="ph-btn" type="button">Get fresh links</button>
+        </div>
+        <p class="ph-note">On a phone, open each photo and long press it to save it to your gallery.
+          Keep this page link (it is in your email too) to download again later.</p>
+      </section>
+
+      <section id="photos-section" class="ph-section ph-hidden" aria-labelledby="photos-title">
+        <h2 id="photos-title" class="ph-h2">Photos in this order</h2>
+        <ul id="photos" class="ph-grid" aria-label="Photos in this order"></ul>
+      </section>
+
+      <p class="ph-note">Trouble with your order? Email
+        <a id="help-link" href="mailto:techrun.contactus@gmail.com?subject=TechRun%202027%20photo%20order">techrun.contactus@gmail.com</a>
+        with your order code.</p>
+    </div>
+  </main>
+
+  <footer class="ph-footer">
+    <div class="ph-wrap">TechRun 2027. A GN Club event.</div>
+  </footer>
+</body>
+</html>

@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="en" class="ph">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Race Photos | TechRun 2027</title>
+  <meta name="description" content="Find your TechRun 2027 race photos by bib number and download the full resolution originals." />
+  <meta name="color-scheme" content="dark" />
+  <meta name="referrer" content="strict-origin" />
+  <link rel="icon" type="image/png" href="../assets/img/favicon.png" />
+  <link rel="preload" href="../assets/fonts/tektur-latin.woff2" as="font" type="font/woff2" crossorigin />
+  <link rel="preload" href="../assets/fonts/tiny5-latin.woff2" as="font" type="font/woff2" crossorigin />
+  <link rel="stylesheet" href="../css/style.css" />
+  <link rel="stylesheet" href="../css/photos.css" />
+  <script type="module" src="../js/photos/search.js"></script>
+</head>
+<body class="ph">
+  <a class="ph-sr" href="#main">Skip to content</a>
+  <header class="ph-header">
+    <div class="ph-wrap">
+      <a class="ph-brand" href="../">
+        <img src="../assets/img/tr-mark.png" alt="" width="32" height="32" />
+        <span>TechRun <span class="pixel">2027</span></span>
+      </a>
+      <nav class="ph-nav" aria-label="Photos">
+        <a href="./" aria-current="page">Race photos</a>
+        <a href="../">Back to the run</a>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main" class="ph-main">
+    <div class="ph-wrap">
+      <span class="ph-label">Race photos</span>
+      <h1 class="ph-title">Find your <span class="grad-text">photos</span></h1>
+      <p class="ph-lead">Type the number on your race bib. Every photo our photographers took of you shows up here,
+        in the order it was taken. Previews are watermarked. Buy the ones you love for PHP 150 each to get the full resolution originals.</p>
+
+      <form id="search-form" class="ph-row" novalidate>
+        <div class="ph-grow" id="event-field" hidden>
+          <label class="ph-label" for="event">Event</label>
+          <select id="event" name="event" class="ph-input"></select>
+        </div>
+        <div class="ph-grow">
+          <label class="ph-label" for="bib">Bib number</label>
+          <input id="bib" name="bib" class="ph-input bib" type="text" inputmode="numeric" autocomplete="off"
+            spellcheck="false" maxlength="12" placeholder="1234" aria-describedby="bib-hint bib-error" required />
+        </div>
+        <button id="search-btn" class="ph-btn primary" type="submit">Search</button>
+      </form>
+      <p id="bib-hint" class="ph-sr">Numbers only, as printed on your bib.</p>
+      <p id="bib-error" class="ph-note warn ph-hidden" role="alert"></p>
+      <p id="setup-note" class="ph-note warn ph-hidden"></p>
+
+      <section class="ph-section" aria-labelledby="results-title">
+        <h2 id="results-title" class="ph-h2 ph-sr">Results</h2>
+        <div id="status" class="ph-empty" role="status" aria-live="polite">Your photos will appear here.</div>
+        <ul id="grid" class="ph-grid" aria-label="Photos"></ul>
+        <div id="more-row" class="ph-row ph-hidden" style="justify-content:center;margin-top:24px">
+          <button id="more-btn" class="ph-btn" type="button">Show more photos</button>
+        </div>
+      </section>
+
+      <section id="checkout" class="ph-section ph-hidden" aria-labelledby="checkout-title">
+        <h2 id="checkout-title" class="ph-h2">Get the originals</h2>
+        <p class="ph-lead">PHP 150 per photo. Originals are full resolution with no watermark.
+          You pay each photographer directly by GCash, so your cart is split into one order per photographer.</p>
+        <div id="cart-groups" class="ph-groups" aria-live="polite"></div>
+        <p id="checkout-note" class="ph-note ph-hidden" role="status"></p>
+        <form id="checkout-form" class="ph-section" novalidate>
+          <div class="ph-row">
+            <div class="ph-grow">
+              <label class="ph-label" for="buyer-name">Your name</label>
+              <input id="buyer-name" name="name" class="ph-input" type="text" autocomplete="name" maxlength="80"
+                placeholder="Juan Dela Cruz" aria-describedby="name-error" required />
+            </div>
+            <div class="ph-grow">
+              <label class="ph-label" for="email">Email for your order links</label>
+              <input id="email" name="email" class="ph-input" type="email" autocomplete="email" inputmode="email"
+                placeholder="you@example.com" aria-describedby="email-error" required />
+            </div>
+          </div>
+          <p id="name-error" class="ph-note warn ph-hidden" role="alert"></p>
+          <p id="email-error" class="ph-note warn ph-hidden" role="alert"></p>
+          <div class="ph-row" style="margin-top:16px">
+            <button id="buy-selected" class="ph-btn primary" type="submit">Create my orders</button>
+          </div>
+          <p class="ph-note">Next you get one order page per photographer with their GCash QR, number and the exact amount.
+            Pay in GCash, then upload your receipt on the order page. The photographer checks it and your downloads unlock.
+            We also email you every order link.</p>
+        </form>
+      </section>
+
+      <section id="created" class="ph-section ph-hidden" aria-labelledby="created-title" tabindex="-1">
+        <h2 id="created-title" class="ph-h2">Your orders are ready</h2>
+        <p class="ph-note ok">Each photographer is paid separately. Open every order below, pay that photographer the amount shown
+          by GCash, and upload your receipt there. We sent the same links to your email, and this browser keeps them under My orders.</p>
+        <ul id="created-list" class="ph-orders"></ul>
+      </section>
+
+      <section id="my-orders" class="ph-section ph-hidden" aria-labelledby="my-orders-title">
+        <h2 id="my-orders-title" class="ph-h2">My orders</h2>
+        <p class="ph-lead">Orders made or opened on this device. Your emails have the same links.</p>
+        <ul id="my-orders-list" class="ph-orders"></ul>
+      </section>
+
+      <section class="ph-section" aria-labelledby="privacy-title">
+        <h2 id="privacy-title" class="ph-label">Privacy</h2>
+        <p class="ph-note">Want a photo of you taken down? Email
+          <a href="mailto:techrun.contactus@gmail.com?subject=TechRun%202027%20photo%20removal%20request">techrun.contactus@gmail.com</a>
+          with your bib number and the photos, and we will remove them. Location data is stripped from every photo.</p>
+      </section>
+    </div>
+  </main>
+
+  <div id="cart" class="ph-cart ph-hidden" role="region" aria-label="Your selection">
+    <div class="ph-wrap">
+      <div>
+        <div class="count" id="cart-count" aria-live="polite">0 photos selected</div>
+        <div class="total" id="cart-total"></div>
+        <div class="count" id="cart-split"></div>
+      </div>
+      <div class="ph-row">
+        <button id="cart-clear" class="ph-btn small" type="button">Clear</button>
+        <button id="cart-checkout" class="ph-btn primary" type="button">Checkout</button>
+      </div>
+    </div>
+  </div>
+
+  <footer class="ph-footer">
+    <div class="ph-wrap">TechRun 2027. A GN Club event. Questions:
+      <a href="mailto:techrun.contactus@gmail.com">techrun.contactus@gmail.com</a></div>
+  </footer>
+
+  <div id="lightbox" class="ph-lightbox" role="dialog" aria-modal="true" aria-labelledby="lb-title" hidden>
+    <div class="bar">
+      <span id="lb-title">Photo</span>
+      <button id="lb-close" class="ph-btn small" type="button">Close <span class="ph-sr">photo viewer</span></button>
+    </div>
+    <figure>
+      <img id="lb-img" alt="" />
+    </figure>
+    <div>
+      <p id="lb-caption" style="margin:0 0 12px;text-align:center;color:var(--ph-dim);font-size:14px"></p>
+      <div class="nav">
+        <button id="lb-prev" class="ph-btn small" type="button">Previous</button>
+        <button id="lb-pick" class="ph-btn small primary" type="button" aria-pressed="false">Select</button>
+        <button id="lb-next" class="ph-btn small" type="button">Next</button>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
