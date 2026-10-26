@@ -87,7 +87,7 @@ export const CONTENT = {
   highlights: [
     { name: "Chip-Timed Results", category: "Tech · Live", field: "ink", img: "assets/img/highlights/retro-computer.webp", url: mail("TechRun 2027 · Results") },
     { name: "Pixel Photo Wall", category: "Expo · Booth", field: "lime", img: "assets/img/highlights/paint-guy.webp", url: mail("TechRun 2027 · Photo wall") },
-    { name: "Retro Race Village", category: "Expo · Y2K", field: "paper", img: "assets/img/highlights/tv-store.webp", url: mail("TechRun 2027 · Race village") },
+    { name: "Tech Village", category: "Expo · Y2K", field: "paper", img: "assets/img/highlights/tv-store.webp", url: mail("TechRun 2027 · Race village") },
     { name: "Run Club Pacers", category: "Community", field: "cyan", img: "assets/img/highlights/runners-80s.webp", url: mail("TechRun 2027 · Pacers") },
     { name: "Finisher Medal", category: "Finish · Loot", field: "orange", img: "assets/img/highlights/trophy.webp", sprite: true, url: mail("TechRun 2027 · Finisher medal") },
     { name: "Hydration Stations", category: "Support", field: "ink", img: "assets/img/highlights/xp-hills.webp", url: mail("TechRun 2027 · Hydration") },
