@@ -17,7 +17,7 @@ const REST_SLUG = "laced-rest";
 
 const $ = (id) => document.getElementById(id);
 const stage = $("stage"), viewport = $("viewport"), gunCanvas = $("gun"), starsCanvas = $("stars");
-const hud = $("hud"), ammoEl = $("ammo"), actEl = $("act"), cueEl = $("cue"), grainEl = $("grain"), cursorEl = $("cursor");
+const hud = $("hud"), ammoEl = $("ammo"), actEl = $("act"), cueEl = $("cue"), cueTextEl = $("cueText"), grainEl = $("grain"), cursorEl = $("cursor");
 const pips = [...ammoEl.querySelectorAll("u")];
 const coarse = matchMedia("(pointer: coarse)").matches;
 const calm = matchMedia("(prefers-reduced-motion: reduce)");
@@ -27,7 +27,7 @@ history.scrollRestoration = "manual";
 document.documentElement.classList.add("locked");
 document.documentElement.classList.toggle("portrait", PORTRAIT);
 window.scrollTo(0, 0);
-for (const el of [starsCanvas, gunCanvas, grainEl, cursorEl, hud, cueEl, ammoEl]) el.setAttribute("aria-hidden", "true");
+for (const el of [starsCanvas, gunCanvas, grainEl, cursorEl, hud, cueEl, cueTextEl, ammoEl]) el.setAttribute("aria-hidden", "true");
 
 // ---------- shared state ----------
 const state = { ...IDLE_POSE, px: -16 };
@@ -521,6 +521,7 @@ function frame(now) {
   }
   const cueOn = !autoplay && !frozen && t < REST_T + 0.15;
   cueEl.classList.toggle("on", cueOn);
+  cueTextEl.classList.toggle("on", cueOn);
   show(t);
   updateRunner(dt, cueOn);
   drawStars();
