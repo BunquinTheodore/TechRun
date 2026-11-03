@@ -62,6 +62,13 @@ describe("normaliseToken", () => {
     expect(normaliseToken("1234.").hasNumericSeparator).toBe(false);
   });
 
+  it("flags pace and duration marks between digits (10'47\" from a watch share card)", () => {
+    expect(normaliseToken("10'47\"").hasNumericSeparator).toBe(true);
+    expect(normaliseToken("10’47”").hasNumericSeparator).toBe(true);
+    expect(normaliseToken("10′47″").hasNumericSeparator).toBe(true);
+    expect(normaliseToken("5\"30").hasNumericSeparator).toBe(true);
+  });
+
   it("does not substitute letters in a token that is mostly letters", () => {
     // "OIL" would become "011"; too few real digits to trust the substitution.
     expect(normaliseToken("OIL").value).toBe("OIL");
@@ -144,7 +151,7 @@ describe("extractBibs: rejections", () => {
   });
 
   it("rejects times, dates and amounts", () => {
-    const r = extractBibs([tok("12:30"), tok("10/26")], opts(["1230", "1026"]));
+    const r = extractBibs([tok("12:30"), tok("10/26"), tok("10'47\"")], opts(["1230", "1026", "1047"]));
     expect(r.bibs).toEqual([]);
     expect(r.rejected.every((x) => x.reason === "separator")).toBe(true);
   });

@@ -59,8 +59,8 @@ export const SUBSTITUTION_PENALTY = 0.9;
 /** Look alike letters read as digits. Kept to the safest pairs. */
 const LOOKALIKES: Readonly<Record<string, string>> = { O: "0", o: "0", I: "1", l: "1", i: "1", "|": "1" };
 
-/** Separators that make a number a time, date or amount, not a bib. */
-const NUMERIC_SEPARATOR_RE = /[0-9OoIli|][:/.,][0-9OoIli|]/;
+/** Separators that make a number a time, date, amount or pace (10'47"), not a bib. */
+const NUMERIC_SEPARATOR_RE = /[0-9OoIli|][:/.,'"’”′″][0-9OoIli|]/;
 const BIB_PREFIX_RE = /^(?:bib|no)[\s.#:]*(?=[0-9OoIl|])/i;
 const STRIP_RE = /[^A-Za-z0-9|]/g;
 
