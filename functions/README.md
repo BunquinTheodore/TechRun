@@ -20,7 +20,8 @@ per photographer GCash orders, and the admin setup callables. Settings live in `
      --member="serviceAccount:$SA" --role="roles/iam.serviceAccountTokenCreator" --project techrun-2027
    ```
 
-5. Paste the web app config into `FIREBASE_CONFIG` in `js/photos/firebase.js`.
+5. The web app config for `techrun-2027` is already in `FIREBASE_CONFIG` in `js/photos/firebase.js`. Restrict that
+   API key in the Cloud console (HTTP referrers for the hosting domains, Firebase APIs only) before launch.
 6. Install the Trigger Email extension (`firebase ext:install firebase/firestore-send-email`), collection `mail`,
    SMTP credentials kept in Secret Manager.
 7. Create `functions/.env` with `SITE_URL=https://<hosting domain>` so links in emails are correct.

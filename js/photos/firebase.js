@@ -9,15 +9,16 @@ import { initializeAppCheck, ReCaptchaEnterpriseProvider } from "https://www.gst
 /** Base URL of the Firebase JS SDK modules; import other SDK functions from `${SDK}/firebase-*.js`. */
 export const SDK = "https://www.gstatic.com/firebasejs/10.12.2";
 
-// PASTE THE REAL WEB CONFIG HERE: Firebase console > Project settings > Your apps > Web app > SDK setup.
-// The web config is not a secret, but keep it out of this file until the project exists.
+// Web app config for techrun-2027 (Firebase console > Project settings > Your apps > TechRun Web).
+// The web config is not a secret; access is enforced by the security rules (App Check too, once its key below is set).
+// Restrict this API key in the Cloud console (HTTP referrers + Firebase APIs only) before launch.
 const FIREBASE_CONFIG = {
-  apiKey: "PASTE_API_KEY",
+  apiKey: "AIzaSyDvaRKW5FlUiqtpSKOyQZn5RvPELni4Mkc",
   authDomain: "techrun-2027.firebaseapp.com",
   projectId: "techrun-2027",
   storageBucket: "techrun-2027.firebasestorage.app",
-  messagingSenderId: "PASTE_SENDER_ID",
-  appId: "PASTE_APP_ID",
+  messagingSenderId: "635993327954",
+  appId: "1:635993327954:web:5c14fc6744b7bfac68d28b",
 };
 
 // PASTE THE reCAPTCHA ENTERPRISE SITE KEY HERE: Firebase console > App Check > Apps > Web app > reCAPTCHA Enterprise.
@@ -34,13 +35,15 @@ export const EVENT_ID = "techrun-2027";
 /** True on localhost / 127.0.0.1: every service talks to the Emulator Suite (ports from firebase.json). */
 export const USING_EMULATORS = ["localhost", "127.0.0.1"].includes(location.hostname);
 
-/** False until the placeholder web config above is replaced (emulators work either way). */
+/** Guards against a reverted placeholder config (emulators work either way). */
 export const IS_CONFIGURED = !FIREBASE_CONFIG.apiKey.startsWith("PASTE_");
 
 export const app = initializeApp(FIREBASE_CONFIG);
 // App Check proves calls come from this site. Skipped on the emulators (not enforced there) and until the key is set.
 if (!USING_EMULATORS && !APP_CHECK_SITE_KEY.startsWith("PASTE_")) {
   initializeAppCheck(app, { provider: new ReCaptchaEnterpriseProvider(APP_CHECK_SITE_KEY), isTokenAutoRefreshEnabled: true });
+} else if (!USING_EMULATORS) {
+  console.warn("App Check is off: set APP_CHECK_SITE_KEY and ENFORCE_APP_CHECK before launch.");
 }
 export const auth = getAuth(app);
 export const db = getFirestore(app);
