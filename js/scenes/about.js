@@ -326,7 +326,7 @@ function distancesScene(C) {
 
 /* ------------------------------------------------------------------ 10 distances-rest */
 const RUNNER_KEYS = ["cyber", "hoodie", "cap"];
-// 10K runs with the girl sprite (ponytail, orange jacket), built from the cap runner's frames
+// 10K runs with the girl sprite (client supplied chibi5, visor and bun)
 // brand accent per distance, in category order: 3K cyan, 5K lime, 10K orange
 const ROW_ACCENTS = ["cyan", "lime", "orange"];
 const runnerFor = (C, c, i) => (String(c.name).toUpperCase() === "10K" ? C.assets.runners.girl

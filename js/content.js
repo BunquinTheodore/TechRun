@@ -32,7 +32,7 @@ export const CONTENT = {
       hills: "assets/img/xp-hills.webp",
     },
     // first frame of each pixel runner, for still (non animated) placements
-    runnerStatic: { cyber: "assets/img/runner-cyber-static.png", hoodie: "assets/img/runner-hoodie-static.png", cap: "assets/img/runner-cap-static.png", girl: "assets/img/runner-girl-static.png" },
+    runnerStatic: { cyber: "assets/img/runner-cyber-static.png", hoodie: "assets/img/runner-hoodie-static.png", cap: "assets/img/runner-cap-static.png", girl: "assets/img/runner-chibi5-static.png" },
     logoRing: "assets/img/logo-ring.png",   // TR mark in gradient ring, transparent; DARK fields only
     badge: "assets/img/badge-pixel.png",     // pixel-dot gradient ring + white TR mark, transparent; DARK fields only
     mark: "assets/img/tr-mark.png",          // white + gradient TR mark, transparent; DARK fields only
@@ -62,7 +62,7 @@ export const CONTENT = {
       cyber: { name: "Cyber", walk: "assets/gif/cyber-walk.webp", run: "assets/gif/cyber-run.webp" },
       hoodie: { name: "Hoodie", walk: "assets/gif/hoodie-walk.webp", run: "assets/gif/hoodie-run.webp" },
       cap: { name: "Cap", walk: "assets/gif/cap-walk.webp", run: "assets/gif/cap-run.webp" },
-      girl: { name: "Girl", walk: "assets/gif/girl-walk.webp", run: "assets/gif/girl-run.webp" },
+      girl: { name: "Girl", walk: "assets/gif/chibi5-run.webp", run: "assets/gif/chibi5-run.webp" }, // client supplied chibi5_run.gif
     },
   },
   register: {
