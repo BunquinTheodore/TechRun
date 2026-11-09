@@ -5,22 +5,16 @@ import { PORTRAIT, SW, DH, lay } from "../stage.js";
 // ---------- 02 / 03 shared "READY / SET." block ----------
 const READY = "READY", SET = "SET.";
 const CX = SW / 2, CY = DH / 2;                // frame centre
-const RB_X = lay(200, 60);                     // corner brackets inset from the sides
-// READY / SET type size: portrait fills the frame width inside the 90px side margins (Tiny5 READY runs ~3.1em)
-const RB_FS = lay(248, 288);
+// READY / SET type size, as big as the frame allows (Tiny5 READY runs ~3.1em wide): desktop is bound by height
+// (two lines + eyebrow + footer above the bottom track), portrait by width (about 1000 of 1080)
+const RB_FS = lay(416, 320);
 const RB_H = Math.round(RB_FS * 0.824);        // one READY / SET line
-// vertical offsets from the frame centre (desktop keeps its original rhythm; portrait follows the bigger type)
-const RB = lay(
-  { top: 320, eye: 278, bar: 260, foot: 296, bot: 296 },
-  { top: RB_H + 104, eye: RB_H + 64, bar: RB_H + 24, foot: RB_H + 60, bot: RB_H + 64 },
-);
+// vertical offsets from the frame centre, following the type size
+const RB = { eye: RB_H + lay(56, 64), bar: RB_H + 24, foot: RB_H + lay(52, 60) };
 function readyBlock(p) {
-  const br = (l, t, bw) => `<i class="${p}br" style="position:absolute;left:${l}px;top:${t}px;width:64px;height:64px;border:0 solid var(--lime);border-width:${bw}"></i>`;
   const line = `position:absolute;left:0;width:${SW}px;text-align:center;white-space:nowrap;font-size:${RB_FS}px;line-height:.82`;
-  const top = CY - RB.top, bot = CY + RB.bot, right = SW - RB_X - 64;
   return `
 <div class="${p}grp" style="position:absolute;inset:0;transform-origin:${CX}px ${CY}px">
-  ${br(RB_X, top, "4px 0 0 4px")}${br(right, top, "4px 4px 0 0")}${br(RB_X, bot, "0 0 4px 4px")}${br(right, bot, "0 4px 4px 0")}
   <div class="eyebrow ${p}eye" style="position:absolute;left:0;width:${SW}px;justify-content:center;top:${CY - RB.eye}px;font-size:${lay(20, 28)}px">Runner cleared</div>
   <div class="pixel ${p}l1" style="${line};top:${CY - RB_H}px">${READY}</div>
   <div class="pixel ${p}l2" style="${line};top:${CY}px;color:var(--lime)">${SET}</div>
@@ -36,7 +30,6 @@ function accessHtml() {
 
 function accessAnim(root, tl) {
   tl.fromTo(q(root, ".ag-flash"), { opacity: 0.5 }, { opacity: 0, duration: 0.35, ease: "power2.out" }, 0);
-  tl.from(qa(root, ".ag-br"), { opacity: 0, scale: 1.8, duration: 0.45, ease: "power4.out", transformOrigin: "50% 50%" }, 0);
   const eye = q(root, ".ag-eye"), l1 = q(root, ".ag-l1"), l2 = q(root, ".ag-l2");
   for (const [el, t, at, dur] of [[eye, "RUNNER CLEARED", 0.05, 0.45], [l1, READY, 0.1, 0.45], [l2, SET, 0.3, 0.5]]) {
     tl.fromTo(el, { opacity: 0 }, { opacity: 1, duration: 0.01 }, at);
