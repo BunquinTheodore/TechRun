@@ -58,8 +58,9 @@ function highlightsRest(C) {
   }).join("");
   const PV = G.pv;
   return {
-    slug: "highlights-rest", name: "Highlights", act: ACT_HL, field: "cyan", dur: 5.0, stars: false,
-    turn: null, rest: TOUCH ? "hold a card to preview, tap to open" : "hover a card to preview, click to open", restAt: 4.27, shoe: false,
+    slug: "highlights-rest", name: "Highlights", act: ACT_HL, field: "cyan", dur: 2.0, stars: false,
+    // rests almost at once: one scroll lands here and the card intro then plays by itself (time based, not scrubbed)
+    turn: null, rest: TOUCH ? "hold a card to preview, tap to open" : "hover a card to preview, click to open", restAt: 0.3, shoe: false,
     html: `<style>${baseCss(S)}
 ${S} .hl-card{position:absolute;display:flex;flex-direction:column;justify-content:flex-end;gap:14px;padding:0 24px 22px;border:3px solid var(--ink);
   text-decoration:none;overflow:hidden;transition:background-color .2s,color .2s,box-shadow .2s;-webkit-touch-callout:none;-webkit-user-select:none;user-select:none}
@@ -113,19 +114,26 @@ ${S} .hl-pv .pv-go{font-size:28px}` : ""}
       </div>`,
     anim(root, tl) {
       const cs = qa(root, ".hl-card"), nEl = q(root, ".hl-n");
-      tl.from(q(root, ".hl-eb"), { opacity: 0, x: -40, duration: 0.6, ease: "power3.out" }, 0.05);
-      tl.from(q(root, ".hl-head .mask > span"), { yPercent: 110, duration: 0.9, ease: "expo.out" }, 0.1);
-      tl.from(q(root, ".hl-tag"), { opacity: 0, x: 30, duration: 0.6, ease: "power3.out" }, 0.4);
-      tl.from(q(root, ".hl-rule"), { scaleX: 0, duration: 1.1, ease: "power3.inOut" }, 0.3);
-      const STEP = 0.45;
+      // the intro runs on its own clock once the scene is entered, so one scroll reveals every card (with animation)
+      const intro = gsap.timeline({ paused: true });
+      intro.from(q(root, ".hl-eb"), { opacity: 0, x: -40, duration: 0.5, ease: "power3.out" }, 0);
+      intro.from(q(root, ".hl-head .mask > span"), { yPercent: 110, duration: 0.7, ease: "expo.out" }, 0.05);
+      intro.from(q(root, ".hl-tag"), { opacity: 0, x: 30, duration: 0.5, ease: "power3.out" }, 0.2);
+      intro.from(q(root, ".hl-rule"), { scaleX: 0, duration: 0.8, ease: "power3.inOut" }, 0.15);
+      const STEP = 0.14;
       cs.forEach((c, i) => {
         const up = i % 2 === 0;
-        tl.from(c, { opacity: 0, y: up ? 170 : -170, rotationY: up ? -75 : 75, transformPerspective: 1100,
-          duration: 0.95, ease: "power3.out" }, 0.5 + i * STEP);
+        intro.from(c, { opacity: 0, y: up ? 170 : -170, rotationY: up ? -75 : 75, transformPerspective: 1100,
+          duration: 0.8, ease: "power3.out" }, 0.3 + i * STEP);
       });
-      count(tl, (v) => { nEl.textContent = pad(Math.min(n, Math.ceil(v - 1e-6))); }, 0, n, 0.5, n * STEP);
-      // clear the frame just after the rest (4.27) and before main.js's iris (dur - 0.55), so nothing rides above the wipe
-      tl.fromTo(qa(root, ".hl-card, .hl-eb, .hl-tag, .hl-head, .hl-rule"), { autoAlpha: 1 }, { autoAlpha: 0, duration: 0.25, ease: "power2.in", immediateRender: false }, 4.3);
+      count(intro, (v) => { nEl.textContent = pad(Math.min(n, Math.ceil(v - 1e-6))); }, 0, n, 0.3, n * STEP + 0.3);
+      // entering the scene (film time crosses 0.02) plays it from the start; leaving backwards resets it for next time
+      tl.call(() => intro.restart(), null, 0.02);
+      tl.call(() => intro.pause(0), null, 0.005);
+      // a fast scroll past the page finishes the intro first, so its tweens never fight the exit fade
+      tl.call(() => intro.progress(1), null, 1.14);
+      // clear the frame after the rest hold and before main.js's iris (dur - 0.55), so nothing rides above the wipe
+      tl.fromTo(qa(root, ".hl-card, .hl-eb, .hl-tag, .hl-head, .hl-rule"), { autoAlpha: 1 }, { autoAlpha: 0, duration: 0.25, ease: "power2.in", immediateRender: false }, 1.15);
       wirePreview(root, cs, PV);
     },
   };
