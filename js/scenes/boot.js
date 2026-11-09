@@ -81,17 +81,19 @@ const NAME_FS = lay(272, 204);   // TECH / RUN (Tiny5); portrait sets TECHRUN on
 const YEAR_FS = lay(196, 168);   // 2027 (Tektur), about as wide as TECH on desktop
 const YEAR_LS = lay(0.3, 0.5);   // 2027 letter spacing (em)
 const LOGO_RATIO = 363 / 193;    // C.assets.logo.black is 363 x 193
-// desktop keeps the type left, the waitlist block centred and the runner top right under the rule;
-// portrait centres every element in one column
+// desktop: a two column grid inside the 130px margins. Wordmark left; one right column (x SIDE.x, as tall as the
+// wordmark) holds tagline, waitlist and details, with the runner under the rule above it. Portrait centres one column.
 const NM = lay(
   { m: 130, logoX: 130, logoY: 58, logoH: 76, metaX: 300, metaY: 80, metaFs: 20, ruleY: 166, ruleW: 1660, blockY: 236,
-    runX: 1534, runY: 172, runS: 256, ctaX: 940, ctaY: 420, ctaW: 420, regH: 108, regFs: 40, noteFs: 16, partnerH: 56,
+    runX: 1622, runY: 184, runS: 168, ctaX: 940, ctaY: 420, ctaW: 420, regH: 108, regFs: 40, noteFs: 16, partnerH: 56,
     titleX: 1240, titleY: 716, titleW: 590, eyeFs: 20, tagFs: 40, botY: 900, botFs: 20 },
   { m: 90, logoX: 465, logoY: 40, logoH: 80, metaX: 0, metaY: 144, metaFs: 24, ruleY: 212, ruleW: 900, blockY: 404,
     runX: 468, runY: 224, runS: 144, ctaX: 90, ctaY: 800, ctaW: 900, regH: 120, regFs: 52, noteFs: 24, partnerH: 56,
     titleX: 90, titleY: 1136, titleW: 900, eyeFs: 28, tagFs: 40, botY: 1284, botFs: 24 },
 );
-const REG_W = lay(420, 640);
+const REG_W = lay(560, 640);
+// desktop right column: spans the wordmark block (top of TECH to the foot of 2027)
+const SIDE = { x: 1230, w: 560, top: 360, bottom: 880 };
 
 // main hero button: the waitlist dialog until REGISTER_URL is set in content.js, then the registration link
 const ARROW = `<svg width="34" height="34" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 18 18 6M8 6h10v10" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="square"/></svg>`;
@@ -131,16 +133,24 @@ function nameHtml(C) {
   ${S} .nm-cta { position:absolute; left:${NM.ctaX}px; top:${NM.ctaY}px; width:${NM.ctaW}px; z-index:6; display:grid; justify-items:center; gap:${lay(20, 24)}px; text-align:center; }
   ${S} .nm-reg { position:relative; display:flex; border:0; padding:0; white-space:nowrap; align-items:center; justify-content:center; gap:18px; width:${REG_W}px; height:${NM.regH}px;
     background:var(--ink); color:var(--lime); text-decoration:none; font:900 ${NM.regFs}px/1 var(--sans); font-stretch:75%; letter-spacing:.02em;
-    text-transform:uppercase; box-shadow:0 18px 40px rgba(var(--ink-rgb),.28); transition:color .2s, transform .2s; }
+    text-transform:uppercase; box-shadow:0 18px 40px rgba(var(--ink-rgb),.28); transition:color .2s, top .2s; top:0; }
   ${S} .nm-reg::after { content:""; position:absolute; left:0; right:0; bottom:0; height:8px; background:var(--grad); }
   ${S} .nm-reg::before { content:""; position:absolute; inset:0; background:var(--grad); opacity:0; transition:opacity .2s; }
-  ${S} .nm-reg:hover, ${S} .nm-reg:focus-visible { color:var(--ink); transform:translateY(-3px); }
+  ${S} .nm-reg:hover, ${S} .nm-reg:focus-visible { color:var(--ink); top:-4px; } /* lift via top: a CSS transform transition fights the GSAP entrance (left the button 26px low) */
   ${S} .nm-reg:hover::before, ${S} .nm-reg:focus-visible::before { opacity:1; }
   ${S} .nm-reg span, ${S} .nm-reg svg { position:relative; }
   ${S} .nm-title { text-align:${align}; }
   ${S} .nm-title .eyebrow { font-size:${NM.eyeFs}px; letter-spacing:${lay(".34em", ".26em")}; justify-content:${flexAlign}; }
   ${S} .nm-partner { display:block; height:${NM.partnerH}px; width:auto; margin-top:${lay(4, 8)}px; }
   ${S} .nm-note { margin-top:8px; white-space:nowrap; font:600 ${NM.noteFs}px/1.4 var(--mono); letter-spacing:.2em; text-transform:uppercase; color:rgba(var(--ink-rgb),.72); }
+${PORTRAIT ? "" : `
+  ${S} .nm-side { display:flex; flex-direction:column; justify-content:space-between; }
+  ${S} .nm-tag { margin:20px 0 0; font:600 48px/1.16 var(--sans); color:var(--ink); }
+  ${S} .nm-side .nm-cta { position:static; width:auto; display:grid; justify-items:start; gap:24px; text-align:left; }
+  ${S} .nm-side .nm-note { margin-top:0; }
+  ${S} .nm-bot { display:flex; align-items:flex-end; justify-content:space-between; gap:24px; padding-top:24px; border-top:3px solid var(--ink); }
+  ${S} .nm-side .nm-meta { position:static; white-space:normal; font-size:20px; line-height:1.6; }
+  ${S} .nm-side .nm-partner { margin:0; height:48px; }`}
 </style>
 <img class="nm-mark" src="${esc(A.logo.black)}" alt="${esc(B.name)}" width="${logoW}" height="${NM.logoH}" style="position:absolute;left:${NM.logoX}px;top:${NM.logoY}px;width:${logoW}px;height:${NM.logoH}px">
 <div class="nm-meta nm-top" style="left:${NM.metaX}px;top:${NM.metaY}px${metaPos}">${esc(O.label)} ${esc(B.org)}</div>
@@ -156,7 +166,7 @@ function nameHtml(C) {
   </div>
 </div>
 
-<div class="nm-cta">
+${PORTRAIT ? `<div class="nm-cta">
   ${heroCta(R, WL, B)}
   <img class="nm-partner nm-c" src="${esc(A.irunph)}" alt="iRunPH" width="439" height="160">
 </div>
@@ -165,7 +175,19 @@ function nameHtml(C) {
   <div class="eyebrow">${esc(O.line)}</div>
   <p style="margin:${lay(24, 20)}px 0 0;font:600 ${NM.tagFs}px/1.2 var(--sans);color:var(--ink)">${esc(B.tagline)}</p>
 </div>
-<div class="nm-meta nm-bot" style="left:${NM.titleX}px;top:${NM.botY}px;white-space:normal;width:${NM.titleW}px;text-align:${align};font-size:${NM.botFs}px;line-height:1.6">${esc(C.location.city)}, ${esc(C.location.country)}<br>${esc(C.location.venue)} &nbsp;·&nbsp; ${esc(O.date)}</div>`;
+<div class="nm-meta nm-bot" style="left:${NM.titleX}px;top:${NM.botY}px;white-space:normal;width:${NM.titleW}px;text-align:${align};font-size:${NM.botFs}px;line-height:1.6">${esc(C.location.city)}, ${esc(C.location.country)}<br>${esc(C.location.venue)} &nbsp;·&nbsp; ${esc(O.date)}</div>` : `<div class="nm-side" style="position:absolute;left:${SIDE.x}px;top:${SIDE.top}px;width:${SIDE.w}px;height:${SIDE.bottom - SIDE.top}px;z-index:6">
+  <div class="nm-title">
+    <div class="eyebrow">${esc(O.line)}</div>
+    <p class="nm-tag">${esc(B.tagline)}</p>
+  </div>
+  <div class="nm-cta">
+    ${heroCta(R, WL, B)}
+  </div>
+  <div class="nm-bot">
+    <div class="nm-meta nm-loc">${esc(C.location.city)}, ${esc(C.location.country)}<br>${esc(C.location.venue)} &nbsp;·&nbsp; ${esc(O.date)}</div>
+    <img class="nm-partner nm-c" src="${esc(A.irunph)}" alt="iRunPH" width="439" height="160">
+  </div>
+</div>`}`;
 }
 
 function nameAnim(root, tl) {
