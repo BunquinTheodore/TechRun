@@ -84,32 +84,35 @@ ${brk(FP_L - 40, SCAN_TOP - 40, "3px 0 0 3px")}${brk(FP_L + 536, SCAN_TOP - 40, 
 </div>`;
 }
 
+// FP_SPEED scales every beat of the scan (1 = the original 2.4s scene); main.js BOOT_GATE uses the same factor
+export const FP_SPEED = 0.55;
+const fp = (v) => +(v * FP_SPEED).toFixed(3);
 function biometricAnim(root, tl) {
   const rect = q(root, ".bs-clip");
   const scan = q(root, ".bs-scan");
   const val = q(root, ".bs-val");
   const minu = q(root, ".bs-min");
 
-  tl.from(qa(root, ".bs-eye, .bs-l1, .bs-r1"), { opacity: 0, x: -24, duration: 0.5, ease: "power3.out", stagger: 0.08 }, 0.05);
-  tl.from(qa(root, ".bs-br"), { opacity: 0, scale: 1.4, duration: 0.5, ease: "power3.out", stagger: 0.05 }, 0.05);
-  tl.from(qa(root, ".bs-px"), { scale: 0, duration: 0.25, ease: "steps(3)", stagger: 0.12 }, 0.3);
-  tl.from(qa(root, ".bs-t"), { scaleY: 0, duration: 0.7, ease: "power3.out" }, 0.15);
-  tl.from(qa(root, ".fpb path"), { strokeDashoffset: 1, duration: 0.9, ease: "power2.out", stagger: 0.035 }, 0.1);
-  tl.from(qa(root, ".fpr path"), { strokeDashoffset: 1, duration: 0.9, ease: "power2.out", stagger: 0.035 }, 0.1);
+  tl.from(qa(root, ".bs-eye, .bs-l1, .bs-r1"), { opacity: 0, x: -24, duration: fp(0.5), ease: "power3.out", stagger: fp(0.08) }, fp(0.05));
+  tl.from(qa(root, ".bs-br"), { opacity: 0, scale: 1.4, duration: fp(0.5), ease: "power3.out", stagger: fp(0.05) }, fp(0.05));
+  tl.from(qa(root, ".bs-px"), { scale: 0, duration: fp(0.25), ease: "steps(3)", stagger: fp(0.12) }, fp(0.3));
+  tl.from(qa(root, ".bs-t"), { scaleY: 0, duration: fp(0.7), ease: "power3.out" }, fp(0.15));
+  tl.from(qa(root, ".fpb path"), { strokeDashoffset: 1, duration: fp(0.9), ease: "power2.out", stagger: fp(0.035) }, fp(0.1));
+  tl.from(qa(root, ".fpr path"), { strokeDashoffset: 1, duration: fp(0.9), ease: "power2.out", stagger: fp(0.035) }, fp(0.1));
 
   // scan sweep: lime reveal clip and the scanline travel together
-  tl.fromTo(rect, { attr: { height: 0 } }, { attr: { height: SCAN_H }, duration: 2, ease: "power1.inOut", immediateRender: false }, 0.3);
-  tl.fromTo(scan, { y: 0 }, { y: SCAN_H, duration: 2, ease: "power1.inOut" }, 0.3);
-  tl.fromTo(scan, { opacity: 0 }, { opacity: 1, duration: 0.15, ease: "none" }, 0.3);
+  tl.fromTo(rect, { attr: { height: 0 } }, { attr: { height: SCAN_H }, duration: fp(2), ease: "power1.inOut", immediateRender: false }, fp(0.3));
+  tl.fromTo(scan, { y: 0 }, { y: SCAN_H, duration: fp(2), ease: "power1.inOut" }, fp(0.3));
+  tl.fromTo(scan, { opacity: 0 }, { opacity: 1, duration: 0.1, ease: "none" }, fp(0.3));
 
-  tl.from(q(root, ".bs-num"), { opacity: 0, y: 30, duration: 0.5, ease: "power3.out" }, 0.1);
-  count(tl, (v) => { val.textContent = pad(Math.round(v)); }, 0, 97, 0.15, 2.15, "power2.out");
-  count(tl, (v) => { val.textContent = v >= 99.5 ? "100" : pad(Math.round(v)); }, 97, 100, 2.3, 0.1);
+  tl.from(q(root, ".bs-num"), { opacity: 0, y: 30, duration: fp(0.5), ease: "power3.out" }, fp(0.1));
+  count(tl, (v) => { val.textContent = pad(Math.round(v)); }, 0, 97, fp(0.15), fp(2.15), "power2.out");
+  count(tl, (v) => { val.textContent = v >= 99.5 ? "100" : pad(Math.round(v)); }, 97, 100, fp(2.3), fp(0.1));
 
-  tl.from(q(root, ".bs-r2"), { opacity: 0, x: 24, duration: 0.5, ease: "power3.out" }, 0.5);
-  count(tl, (v) => { minu.textContent = pad(Math.round(v), 3); }, 0, 142, 0.3, 1.9, "power1.out");
-  tl.fromTo(q(root, ".bs-s2"), { opacity: 0 }, { opacity: 1, duration: 0.01 }, 2.0);
-  tl.fromTo(q(root, ".bs-s1"), { opacity: 1 }, { opacity: 0, duration: 0.01, immediateRender: false }, 2.0);
+  tl.from(q(root, ".bs-r2"), { opacity: 0, x: 24, duration: fp(0.5), ease: "power3.out" }, fp(0.5));
+  count(tl, (v) => { minu.textContent = pad(Math.round(v), 3); }, 0, 142, fp(0.3), fp(1.9), "power1.out");
+  tl.fromTo(q(root, ".bs-s2"), { opacity: 0 }, { opacity: 1, duration: 0.01 }, fp(2.0));
+  tl.fromTo(q(root, ".bs-s1"), { opacity: 1 }, { opacity: 0, duration: 0.01, immediateRender: false }, fp(2.0));
 }
 
 // ---------- 02 / 03 shared "READY / SET." block ----------
@@ -346,7 +349,7 @@ function burstAnim(root, tl) {
 export function scenes(C) {
   const base = { stars: false, ammo: 0, turn: null, rest: null, restAt: null, shoe: false };
   return [
-    { ...base, slug: "biometric-scan", name: "Runner check-in", act: "00 · Check-in", field: "ink", dur: 2.4, html: biometricHtml(C), anim: biometricAnim },
+    { ...base, slug: "biometric-scan", name: "Runner check-in", act: "00 · Check-in", field: "ink", dur: fp(2.4), html: biometricHtml(C), anim: biometricAnim },
     { ...base, slug: "access-granted", name: "Ready, set", act: "00 · Check-in", field: "ink", dur: 1.2, html: accessHtml(), anim: accessAnim },
     { ...base, slug: "collapse-to-the-dot", name: "Collapse to the dot", act: "00 · Check-in", field: "ink", dur: 1.8, stars: true, html: collapseHtml(), anim: collapseAnim },
     {
