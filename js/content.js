@@ -14,7 +14,7 @@ export const CONTENT = {
     year: "2027",
     org: "GN Club",
     title: "TechRun 2027",
-    tagline: "Next step into the future.",     // official tagline
+    tagline: "Next step, into the future.",     // official tagline
     email: EMAIL,
   },
   // images and sprites (paths relative to index.html)

@@ -77,15 +77,15 @@ function collapseAnim(root, tl) {
 
 // ---------- 04 name (hero on lime): the "first page" with every key detail and the waitlist button ----------
 // brand wordmark: TECH / RUN in Tiny5 (pixel), 2027 in Tektur spaced wide
-const NAME_FS = lay(272, 204);   // TECH / RUN (Tiny5); portrait sets TECHRUN on one line
-const YEAR_FS = lay(196, 168);   // 2027 (Tektur), about as wide as TECH on desktop
+const NAME_FS = lay(232, 204);   // TECHRUN (Tiny5), one line on desktop and portrait
+const YEAR_FS = lay(280, 168);   // 2027 (Tektur), about as wide as TECHRUN on desktop
 const YEAR_LS = lay(0.3, 0.5);   // 2027 letter spacing (em)
 const LOGO_RATIO = 363 / 193;    // C.assets.logo.black is 363 x 193
 // desktop: a two column grid inside the 130px margins. Wordmark left; one right column (x SIDE.x, as tall as the
 // wordmark) holds tagline, waitlist and details, with the runner under the rule above it. Portrait centres one column.
 const NM = lay(
-  { m: 130, logoX: 130, logoY: 58, logoH: 76, metaX: 300, metaY: 80, metaFs: 20, ruleY: 166, ruleW: 1660, blockY: 236,
-    runX: 1622, runY: 184, runS: 168, ctaX: 940, ctaY: 420, ctaW: 420, regH: 108, regFs: 40, noteFs: 16, partnerH: 56,
+  { m: 130, logoX: 130, logoY: 58, logoH: 76, metaX: 300, metaY: 80, metaFs: 20, ruleY: 166, ruleW: 1660, blockY: 420,
+    runX: 1426, runY: 236, runS: 168, ctaX: 940, ctaY: 420, ctaW: 420, regH: 108, regFs: 40, noteFs: 16, partnerH: 56,
     titleX: 1240, titleY: 716, titleW: 590, eyeFs: 20, tagFs: 40, botY: 900, botFs: 20 },
   { m: 90, logoX: 465, logoY: 40, logoH: 80, metaX: 0, metaY: 144, metaFs: 24, ruleY: 212, ruleW: 900, blockY: 404,
     runX: 468, runY: 224, runS: 144, ctaX: 90, ctaY: 800, ctaW: 900, regH: 120, regFs: 52, noteFs: 24, partnerH: 56,
@@ -93,7 +93,7 @@ const NM = lay(
 );
 const REG_W = lay(560, 640);
 // desktop right column: spans the wordmark block (top of TECH to the foot of 2027)
-const SIDE = { x: 1230, w: 560, top: 360, bottom: 880 };
+const SIDE = { x: 1230, w: 560, top: 420, bottom: 880 };  // same band as the wordmark; runner centred above it
 
 // main hero button: the waitlist dialog until REGISTER_URL is set in content.js, then the registration link
 const ARROW = `<svg width="34" height="34" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 18 18 6M8 6h10v10" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="square"/></svg>`;
@@ -114,17 +114,15 @@ function nameHtml(C) {
   const logoW = Math.round(NM.logoH * LOGO_RATIO);
   const align = PORTRAIT ? "center" : "left";
   const flexAlign = PORTRAIT ? "center" : "flex-start";
-  // portrait sets the wordmark as one word (TECHRUN) so the column keeps room to breathe
-  const tech = PORTRAIT
-    ? `<div class="pixel nm-tech nm-one">${word(L[0])}${word(L[1])}</div>`
-    : `<div class="pixel nm-tech">${word(L[0])}</div><div class="pixel nm-tech">${word(L[1])}</div>`;
+  // the wordmark is one word (TECHRUN) on one line, as in the brand lockup
+  const tech = `<div class="pixel nm-tech nm-one">${word(L[0])}${word(L[1])}</div>`;
   const metaPos = PORTRAIT ? `;width:${SW}px;text-align:center` : "";
   const blockPos = PORTRAIT ? `left:0;width:${SW}px;transform-origin:50% 100%` : `left:${NM.m}px;transform-origin:0 100%`;
   return `
 <style>
   ${S} .nm-meta { position:absolute; font:600 ${NM.metaFs}px/1.6 var(--mono); letter-spacing:.22em; text-transform:uppercase; color:var(--ink); white-space:nowrap; }
   ${S} .nm-tech { font-size:${NAME_FS}px; line-height:.84; letter-spacing:.02em; }
-  ${S} .nm-one { display:flex; justify-content:center; }
+  ${S} .nm-one { display:flex; justify-content:${flexAlign}; }
   ${S} .nm-year { font:700 ${YEAR_FS}px/.8 var(--sans); letter-spacing:${YEAR_LS}em; margin-right:-${YEAR_LS}em; }
   ${S} .nm-row { display:flex; align-items:flex-end; justify-content:${flexAlign}; }
   ${S} .nm-pw { position:relative; display:inline-block; width:0; height:.4em; font-size:${YEAR_FS}px; }
@@ -145,6 +143,8 @@ function nameHtml(C) {
   ${S} .nm-note { margin-top:8px; white-space:nowrap; font:600 ${NM.noteFs}px/1.4 var(--mono); letter-spacing:.2em; text-transform:uppercase; color:rgba(var(--ink-rgb),.72); }
 ${PORTRAIT ? "" : `
   ${S} .nm-side { display:flex; flex-direction:column; justify-content:space-between; }
+  ${S} .nm-ey { position:relative; display:inline-block; }
+  ${S} .nm-side .nm-run { left:50%; top:auto; bottom:100%; margin:0 0 16px -${NM.runS / 2}px; }
   ${S} .nm-tag { margin:20px 0 0; font:600 48px/1.16 var(--sans); color:var(--ink); }
   ${S} .nm-side .nm-cta { position:static; width:auto; display:grid; justify-items:start; gap:24px; text-align:left; }
   ${S} .nm-side .nm-note { margin-top:0; }
@@ -156,11 +156,11 @@ ${PORTRAIT ? "" : `
 <div class="nm-meta nm-top" style="left:${NM.metaX}px;top:${NM.metaY}px${metaPos}">${esc(O.label)} ${esc(B.org)}</div>
 <i class="nm-rule" style="position:absolute;left:${NM.m}px;width:${NM.ruleW}px;top:${NM.ruleY}px;height:3px;background:var(--ink);transform-origin:${lay("0", "50%")} 50%"></i>
 
-<img class="nm-run" src="${esc(A.runnerStatic.cyber)}" alt="" width="256" height="256">
+${PORTRAIT ? `<img class="nm-run" src="${esc(A.runnerStatic.cyber)}" alt="" width="256" height="256">` : ""}
 
 <div class="nm-block" style="position:absolute;${blockPos};top:${NM.blockY}px;z-index:5">
   ${tech}
-  <div class="nm-row" style="margin-top:${lay(24, 28)}px">
+  <div class="nm-row" style="margin-top:${lay(36, 28)}px">
     <div class="nm-year">${word(L[2])}</div>
     <span class="nm-pw"><i class="iris nm-iris" style="left:0;top:50%"></i></span>
   </div>
@@ -177,7 +177,7 @@ ${PORTRAIT ? `<div class="nm-cta">
 </div>
 <div class="nm-meta nm-bot" style="left:${NM.titleX}px;top:${NM.botY}px;white-space:normal;width:${NM.titleW}px;text-align:${align};font-size:${NM.botFs}px;line-height:1.6">${esc(C.location.city)}, ${esc(C.location.country)}<br>${esc(C.location.venue)} &nbsp;·&nbsp; ${esc(O.date)}</div>` : `<div class="nm-side" style="position:absolute;left:${SIDE.x}px;top:${SIDE.top}px;width:${SIDE.w}px;height:${SIDE.bottom - SIDE.top}px;z-index:6">
   <div class="nm-title">
-    <div class="eyebrow">${esc(O.line)}</div>
+    <div class="nm-ey"><img class="nm-run" src="${esc(A.runnerStatic.cyber)}" alt="" width="256" height="256"><div class="eyebrow">${esc(O.line)}</div></div>
     <p class="nm-tag">${esc(B.tagline)}</p>
   </div>
   <div class="nm-cta">
@@ -206,7 +206,7 @@ function nameAnim(root, tl) {
   tl.from(q(root, ".nm-title"), { opacity: 0, x: lay(40, 0), y: lay(0, 20), duration: 0.6, ease: "power3.out" }, 0.7);
   tl.from(q(root, ".nm-bot"), { opacity: 0, y: 16, duration: 0.5, ease: "power3.out" }, 0.85);
   tl.fromTo(q(root, ".nm-block"), { scale: 1 }, { scale: 1.035, duration: 1.0, ease: "sine.inOut", immediateRender: false }, 1.55);
-  tl.fromTo(run, { x: 0 }, { x: lay(60, 40), duration: 1.4, ease: "sine.inOut", immediateRender: false }, 1.55);
+  tl.fromTo(run, { x: 0 }, { x: lay(0, 40), duration: 1.4, ease: "sine.inOut", immediateRender: false }, 1.55);
   // post rest: the ink flood grows from a point at the end of 2027
   tl.fromTo(iris, { scale: 0 }, { scale: 1, duration: 0.85, ease: "power3.in", immediateRender: false }, 2.5);
   // the waitlist block sits above the type's stacking context, so it leaves with the flood (and stops taking clicks)
