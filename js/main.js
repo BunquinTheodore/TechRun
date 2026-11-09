@@ -3,6 +3,7 @@ import { CONTENT as C } from "./content.js";
 import { buildAll } from "./scenes/index.js";
 import { IDLE_POSE, makePoser, clamp, esc } from "./scenes/util.js";
 import { FIELD_BG, LIGHT_FIELDS, rgba } from "./palette.js";
+import { initWaitlist } from "./waitlist.js";
 import { PORTRAIT, PORTRAIT_QUERY, PORTRAIT_TOP, PORTRAIT_BOTTOM, SW, SH, DH } from "./stage.js";
 
 const SCENE_PX = 850;          // scroll px for a 2.5s scene; others scale with duration (clamped)
@@ -157,6 +158,14 @@ function scrollToTime(y) {
 const lenis = new Lenis({ lerp: 0.085, smoothWheel: !still, wheelMultiplier: 0.9, touchMultiplier: 1.4 });
 lenis.stop();
 
+// waitlist dialog: while it is open the frame loop holds the film (autoplay included) and Lenis ignores input
+let modal = false;
+initWaitlist({
+  C,
+  onOpen: () => { modal = true; lenis.stop(); },
+  onClose: () => { modal = false; if (!autoplay && !frozen) lenis.start(); },
+});
+
 // ---------- fit ----------
 let view = { s: 1, ox: 0, oy: 0 };
 const gunPixelRatio = () => {
@@ -229,7 +238,7 @@ function drawStars() {
 const curX = gsap.quickTo(cursorEl, "x", { duration: 0.15, ease: "power2.out" });
 const curY = gsap.quickTo(cursorEl, "y", { duration: 0.15, ease: "power2.out" });
 gsap.set(cursorEl, { x: mouse.x, y: mouse.y });
-const POINTABLE = "a, .chip";
+const POINTABLE = "a, button, .chip";
 addEventListener("pointermove", (e) => {
   mouse.x = e.clientX; mouse.y = e.clientY;
   mouse.nx = (e.clientX / innerWidth) * 2 - 1; mouse.ny = -((e.clientY / innerHeight) * 2 - 1);
@@ -502,8 +511,8 @@ function frame(now) {
   last = now; clock += dt;
   const k = 1 - Math.exp(-dt * 6);
   mouse.sx += (mouse.nx - mouse.sx) * k; mouse.sy += (mouse.ny - mouse.sy) * k;
-  if (frozen) {
-    // held by __seek
+  if (frozen || modal) {
+    // held by __seek or the waitlist dialog
   } else if (autoplay) {
     const cap = gunReady ? REST_T : GATE_T;
     t = still && gunReady ? REST_T : Math.min(t + dt, cap);

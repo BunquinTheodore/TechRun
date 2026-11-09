@@ -186,10 +186,10 @@ const PERIOD_EM = 0.2;          // full stop, relative to YEAR_FS
 // type, register block and copy, with the legs striding in beside TECH / RUN
 const NM = lay(
   { m: 130, markX: 112, markY: 78, mark: 96, metaX: 214, metaY: 110, metaFs: 20, ruleY: 166, ruleW: 760, blockY: 236,
-    legs: [1000, -70, 1000], ctaX: 750, ctaY: 384, ctaW: 420, chipFs: 40, chipW: 112, regH: 108, regFs: 44, noteFs: 16, partnerH: 58,
+    legs: [1000, -70, 1000], ctaX: 750, ctaY: 384, ctaW: 420, chipFs: 40, chipW: 112, regH: 108, regFs: 38, noteFs: 16, partnerH: 58,
     titleX: 1240, titleY: 716, titleW: 590, tagFs: 40, botY: 900 },
   { m: 90, markX: 90, markY: 24, mark: 80, metaX: 186, metaY: 50, metaFs: 26, ruleY: 120, ruleW: 900, blockY: 160,
-    legs: [470, 150, 610], ctaX: 90, ctaY: 762, ctaW: 900, chipFs: 52, chipW: 170, regH: 120, regFs: 56, noteFs: 24, partnerH: 56,
+    legs: [470, 150, 610], ctaX: 90, ctaY: 762, ctaW: 900, chipFs: 52, chipW: 170, regH: 120, regFs: 52, noteFs: 24, partnerH: 56,
     titleX: 90, titleY: 1214, titleW: 900, tagFs: 40, botY: 1315, botFs: 22 },
 );
 const REG_W = lay(420, 640);
@@ -203,8 +203,19 @@ const PIXELS = [
   return [Math.round(lx + (x - 1000) * k), Math.round(ly + (y + 70) * k), Math.max(10, Math.round(sz * lay(1, 0.9))), c];
 });
 
+// main hero button: the waitlist dialog until REGISTER_URL is set in content.js, then the registration link
+const ARROW = `<svg width="34" height="34" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 18 18 6M8 6h10v10" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="square"/></svg>`;
+function heroCta(R, WL, B) {
+  if (R.live) {
+    return `<a class="nm-reg nm-c" ${linkAttrs(R.url)} aria-label="${esc(R.label)}: ${esc(B.title)}"><span>${esc(R.label)}</span>${ARROW}</a>
+  <div class="nm-note nm-c">${esc(R.note)}</div>`;
+  }
+  return `<button type="button" class="nm-reg nm-c" data-waitlist="${esc(WL.source)}" aria-haspopup="dialog" aria-label="${esc(WL.label)}: ${esc(B.title)}"><span>${esc(WL.label)}</span>${ARROW}</button>
+  <div class="nm-note nm-c">${esc(WL.note)}</div>`;
+}
+
 function nameHtml(C) {
-  const B = C.brand, L = B.lines, A = C.assets, O = C.organizer, R = C.register;
+  const B = C.brand, L = B.lines, A = C.assets, O = C.organizer, R = C.register, WL = C.waitlist;
   const S = '.scene[data-slug="name"]';
   const px = PIXELS.map(([x, y, s, c]) => `<i class="nm-px" style="left:${x}px;top:${y}px;width:${s}px;height:${s}px;background:var(--${c})"></i>`).join("");
   const dist = C.categories.map((c) => `<a class="nm-d" ${linkAttrs(c.url)} aria-label="Register for the ${esc(c.name)} ${esc(c.label)}">${esc(c.name)}</a>`).join("");
@@ -224,14 +235,14 @@ function nameHtml(C) {
   ${S} a.nm-d { font:400 ${NM.chipFs}px/1 var(--pixel); color:var(--ink); text-decoration:none; border:3px solid var(--ink); padding:14px 20px 10px; min-width:${NM.chipW}px;
     transition:background-color .2s, color .2s; }
   ${S} a.nm-d:hover, ${S} a.nm-d:focus-visible { background:var(--ink); color:var(--lime); }
-  ${S} a.nm-reg { position:relative; display:flex; align-items:center; justify-content:center; gap:18px; width:${REG_W}px; height:${NM.regH}px;
+  ${S} .nm-reg { position:relative; display:flex; border:0; padding:0; cursor:inherit; white-space:nowrap; align-items:center; justify-content:center; gap:18px; width:${REG_W}px; height:${NM.regH}px;
     background:var(--ink); color:var(--lime); text-decoration:none; font:900 ${NM.regFs}px/1 var(--sans); font-stretch:75%; letter-spacing:.02em;
     text-transform:uppercase; box-shadow:0 18px 40px rgba(var(--ink-rgb),.28); transition:color .2s, transform .2s; }
-  ${S} a.nm-reg::after { content:""; position:absolute; left:0; right:0; bottom:0; height:8px; background:var(--grad); }
-  ${S} a.nm-reg::before { content:""; position:absolute; inset:0; background:var(--grad); opacity:0; transition:opacity .2s; }
-  ${S} a.nm-reg:hover, ${S} a.nm-reg:focus-visible { color:var(--ink); transform:translateY(-3px); }
-  ${S} a.nm-reg:hover::before, ${S} a.nm-reg:focus-visible::before { opacity:1; }
-  ${S} a.nm-reg span, ${S} a.nm-reg svg { position:relative; }
+  ${S} .nm-reg::after { content:""; position:absolute; left:0; right:0; bottom:0; height:8px; background:var(--grad); }
+  ${S} .nm-reg::before { content:""; position:absolute; inset:0; background:var(--grad); opacity:0; transition:opacity .2s; }
+  ${S} .nm-reg:hover, ${S} .nm-reg:focus-visible { color:var(--ink); transform:translateY(-3px); }
+  ${S} .nm-reg:hover::before, ${S} .nm-reg:focus-visible::before { opacity:1; }
+  ${S} .nm-reg span, ${S} .nm-reg svg { position:relative; }
   ${S} .nm-title .eyebrow { font-size:${lay(20, 26)}px; letter-spacing:${lay(".34em", ".26em")}; }
   ${S} .nm-partner { display:block; height:${NM.partnerH}px; width:auto; margin-top:${lay(6, 10)}px; }
   ${S} .nm-note { margin-top:8px; white-space:nowrap; font:600 ${NM.noteFs}px/1.4 var(--mono); letter-spacing:.2em; text-transform:uppercase; color:rgba(var(--ink-rgb),.72); }
@@ -255,9 +266,7 @@ ${px}
 <div class="nm-cta">
   <div class="eyebrow nm-c">Pick your distance</div>
   <div class="nm-dists nm-c">${dist}</div>
-  <a class="nm-reg nm-c" ${linkAttrs(R.url)} aria-label="${esc(R.label)}: ${esc(B.title)}"><span>${esc(R.label)}</span>
-    <svg width="34" height="34" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 18 18 6M8 6h10v10" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="square"/></svg></a>
-  <div class="nm-note nm-c">${esc(R.note)}</div>
+  ${heroCta(R, WL, B)}
   <img class="nm-partner nm-c" src="${esc(A.irunph)}" alt="iRunPH" width="439" height="160">
 </div>
 

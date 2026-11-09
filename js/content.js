@@ -56,6 +56,19 @@ export const CONTENT = {
     label: "Register now",
     note: REGISTER_URL ? "3K · 5K · 10K · Slots are limited" : "Opens soon · Get notified",
   },
+  // hero button: joins the freewaitlists.com list (public endpoint, no key; entries show in the freewaitlists dashboard)
+  waitlist: {
+    endpoint: "https://api.freewaitlists.com/waitlists/cmw97lr2a000901qtqr5ilnga",
+    source: "hero",
+    label: "Join the waitlist",
+    note: "Registration opens soon",
+    heading: "Join the waitlist",
+    lead: "Be first to know when 3K, 5K and 10K slots open. One email when registration goes live, no spam.",
+    submit: "Count me in",
+    fine: "We only use your email to tell you about TechRun 2027.",
+    success: "We'll email you the moment registration opens. See you at the start line.",
+    already: "This email is already in line. We'll reach you when registration opens.",
+  },
   words: ["MOVE", "PEOPLE", "BRIGHTER", "TOMORROW"],
   // venue is TBA; the globe points at the host city
   location: { city: "Metro Manila", country: "Philippines", venue: "Venue TBA", lat: 14.6, lon: 121.0, tz: "Asia/Manila", tzLabel: "GMT+8" },
