@@ -14,11 +14,25 @@ export const CONTENT = {
     year: "2027",
     org: "GN Club",
     title: "TechRun 2027",
-    tagline: "Move people for a brighter tomorrow.",
+    tagline: "Next step into the future.",     // official tagline
     email: EMAIL,
   },
   // images and sprites (paths relative to index.html)
   assets: {
+    // exact brand logo (TR mark, the R has two legs), from the brand guidelines deck
+    logo: {
+      black: "assets/img/logo-tr-black.png",       // LIGHT fields
+      white: "assets/img/logo-tr-white.png",       // DARK fields, plain
+      gradient: "assets/img/logo-tr-gradient.png", // DARK fields, brand gradient
+    },
+    // 90s wallpapers, one per page (portrait sources, use background-size: cover)
+    bg: {
+      bliss: "assets/img/bg/bliss.webp", desktop: "assets/img/bg/desktop.webp", computer: "assets/img/bg/computer.webp",
+      popups: "assets/img/bg/popups.webp", errors: "assets/img/bg/errors.webp", paint: "assets/img/bg/paint.webp",
+      hills: "assets/img/xp-hills.webp",
+    },
+    // first frame of each pixel runner, for still (non animated) placements
+    runnerStatic: { cyber: "assets/img/runner-cyber-static.png", hoodie: "assets/img/runner-hoodie-static.png", cap: "assets/img/runner-cap-static.png", girl: "assets/img/runner-girl-static.png" },
     logoRing: "assets/img/logo-ring.png",   // TR mark in gradient ring, transparent; DARK fields only
     badge: "assets/img/badge-pixel.png",     // pixel-dot gradient ring + white TR mark, transparent; DARK fields only
     mark: "assets/img/tr-mark.png",          // white + gradient TR mark, transparent; DARK fields only
@@ -38,16 +52,17 @@ export const CONTENT = {
     icons: "assets/img/retro-icons.png",     // collage of Y2K desktop icons
     blob: "assets/img/gradient-blob.jpg",    // soft brand gradient field
     photos: {
-      computer: "assets/img/retro-computer.jpg", hills: "assets/img/xp-hills.jpg", runners: "assets/img/runners-80s.jpg",
-      paintGuy: "assets/img/paint-guy.jpg", matrix: "assets/img/matrix-kid.jpg", errors: "assets/img/error-windows.jpg",
-      tv: "assets/img/tv-store.jpg", bibs: "assets/img/race-bibs.jpg", singlets: "assets/img/singlets.webp",
-      sweater: "assets/img/model-sweater.jpg", backpack: "assets/img/backpack.jpg", caps: "assets/img/caps.jpg", crew: "assets/img/crew.jpg",
+      computer: "assets/img/retro-computer.jpg", hills: "assets/img/xp-hills.webp", runners: "assets/img/runners-80s.jpg",
+      paintGuy: "assets/img/paint-guy.webp", matrix: "assets/img/matrix-kid.jpg", errors: "assets/img/error-windows.jpg",
+      tv: "assets/img/tv-store.webp", bibs: "assets/img/race-bibs.jpg", singlets: "assets/img/singlets.webp",
+      sweater: "assets/img/model-sweater.jpg", backpack: "assets/img/backpack.webp", caps: "assets/img/caps.jpg", crew: "assets/img/crew.webp",
     },
     // pixel runners, 256x256 transparent animated WebP, 8 frames each (512px GIF masters alongside)
     runners: {
       cyber: { name: "Cyber", walk: "assets/gif/cyber-walk.webp", run: "assets/gif/cyber-run.webp" },
       hoodie: { name: "Hoodie", walk: "assets/gif/hoodie-walk.webp", run: "assets/gif/hoodie-run.webp" },
       cap: { name: "Cap", walk: "assets/gif/cap-walk.webp", run: "assets/gif/cap-run.webp" },
+      girl: { name: "Girl", walk: "assets/gif/girl-walk.webp", run: "assets/gif/girl-run.webp" },
     },
   },
   register: {
@@ -95,26 +110,21 @@ export const CONTENT = {
     midsole: { part: "Midsole", group: "Tech", items: ["Chip Timing", "Live Results", "Photo Search", "Race-Day Updates"], primary: [0, 1] },
     outsole: { part: "Outsole", group: "Route", items: ["Start Arch", "KM Markers", "Water Points", "Finish Arch"], primary: [0, 3] },
   },
-  // race-day highlights (scene: grid of cards); img is a key of assets.photos or a full path.
-  // The photos are 800x280 WebP centre crops of the assets.photos JPGs (the card strip's ratio); trophy is a 241x280 copy.
+  // race-day highlights (scene: row of tall cards, preview on hover / long press); img is a key of assets.photos or a full path.
   highlights: [
-    { name: "Chip-Timed Results", category: "Tech · Live", field: "ink", img: "assets/img/highlights/retro-computer.webp", url: mail("TechRun 2027 · Results") },
-    { name: "Pixel Photo Wall", category: "Expo · Booth", field: "lime", img: "assets/img/highlights/paint-guy.webp", url: mail("TechRun 2027 · Photo wall") },
-    { name: "Tech Village", category: "Expo · Y2K", field: "paper", img: "assets/img/highlights/tv-store.webp", url: mail("TechRun 2027 · Race village") },
-    { name: "Run Club Pacers", category: "Community", field: "cyan", img: "assets/img/highlights/runners-80s.webp", url: mail("TechRun 2027 · Pacers") },
-    { name: "Finisher Medal", category: "Finish · Loot", field: "orange", img: "assets/img/highlights/trophy.webp", sprite: true, url: mail("TechRun 2027 · Finisher medal") },
-    { name: "Hydration Stations", category: "Support", field: "ink", img: "assets/img/highlights/xp-hills.webp", url: mail("TechRun 2027 · Hydration") },
-    { name: "Code & Cardio", category: "Talks · Tech", field: "lime", img: "assets/img/highlights/matrix-kid.webp", url: mail("TechRun 2027 · Talks") },
-    { name: "Afterparty Stage", category: "Music · Night", field: "paper", img: "assets/img/highlights/crew.webp", url: mail("TechRun 2027 · Afterparty") },
+    { name: "Tech Village", category: "Expo · Y2K", field: "paper", img: "tv", url: mail("TechRun 2027 · Race village") },
+    { name: "Afterparty Stage", category: "Music · Night", field: "ink", img: "crew", url: mail("TechRun 2027 · Afterparty") },
+    { name: "Pixel Photo Wall", category: "Expo · Booth", field: "lime", img: "paintGuy", url: mail("TechRun 2027 · Photo wall") },
+    { name: "Merch", category: "Limited · Drop", field: "orange", img: "backpack", url: mail("TechRun 2027 · Merch") },
   ],
   // two showcase frames
   showcases: [
     {
       field: "paper", title: ["Official", "Singlets"], accent: "Singlets", ghost: "S",
-      pitch: "Breathable race singlets in the full TechRun gradient", strikes: ["Front", "Back", "Side"],
-      stack: "Sample categories · Registration TBA", badge: { big: "KIT", small: "Race Kit 2027" },
-      img: "singlets", runner: "hoodie",
-      // race bib cards fanned out under the poster: [src, alt]
+      pitch: "Breathable race singlets in the full TechRun gradient",
+      badge: { big: "KIT", small: "Race Kit 2027" },
+      img: "singlets",
+      // race bib cards shown on the CRT monitor: [src, alt]
       bibs: [
         ["assets/img/bib-3k.webp", "3K race bib 30001"],
         ["assets/img/bib-5k.webp", "5K race bib 50001"],
@@ -147,6 +157,6 @@ export const CONTENT = {
       { label: "Partner", value: "Sponsor the run", url: mail("TechRun 2027 · Partnership") },
       { label: "Volunteer", value: "Join the crew", url: mail("TechRun 2027 · Volunteer") },
     ],
-    footer: "© 2027 TechRun · A GN Club event · Move people for a brighter tomorrow",
+    footer: "© 2027 TechRun · A GN Club event",
   },
 };

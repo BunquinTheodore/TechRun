@@ -1,137 +1,31 @@
-// Scenes 01-05: biometric-scan, access-granted, collapse-to-the-dot, name, word-burst.
-import { pad, q, qa, esc, decode, count, linkAttrs } from "./util.js";
+// Scenes 01-04: access-granted, collapse-to-the-dot, name, word-burst.
+import { pad, q, qa, esc, decode, linkAttrs } from "./util.js";
 import { PORTRAIT, SW, DH, lay } from "../stage.js";
-
-const hash = (n) => { const x = Math.sin(n * 127.1 + 311.7) * 43758.5453; return x - Math.floor(x); };
-
-// ---------- 01 runner check-in: fingerprint scan ----------
-const FP_RINGS = 24;
-function fingerprintPaths() {
-  const cx = 280, cy = 350, out = [];
-  for (let i = 0; i < FP_RINGS; i++) {
-    const rx = 14 + i * 10.6, ry = 20 + i * 13.2;
-    const gap0 = hash(i * 3.1) * Math.PI * 2, gapLen = 0.3 + hash(i * 5.7) * 0.9;
-    const span = Math.PI * 2 - gapLen, steps = 96;
-    let d = "";
-    for (let k = 0; k <= steps; k++) {
-      const a = gap0 + gapLen + (span * k) / steps;
-      const w = 1 + 0.035 * Math.sin(a * 3 + i) + 0.02 * Math.sin(a * 7 - i * 2);
-      const x = cx + rx * Math.cos(a) * w;
-      const y = cy + ry * Math.sin(a) * w * (Math.sin(a) > 0 ? 0.94 : 1);
-      d += (k ? "L" : "M") + x.toFixed(1) + " " + y.toFixed(1);
-    }
-    out.push(`<path d="${d}" pathLength="1" stroke-dasharray="1" />`);
-  }
-  return out.join("");
-}
-
-const SCAN_TOP = lay(190, 330), SCAN_H = 660;
-const FP_L = lay(680, 260);                 // fingerprint box left (560 x 700)
-const BS_FS = lay(20, 30);                  // readout type size
-
-function biometricHtml(C) {
-  const paths = fingerprintPaths();
-  const brk = (l, t, bw) => `<i class="bs-br" style="left:${l}px;top:${t}px;border-width:${bw}"></i>`;
-  const S = '.scene[data-slug="biometric-scan"]';
-  const M = lay(130, 90);
-  return `
-<style>
-  ${S} .bs-br { position:absolute; width:64px; height:64px; border:0 solid var(--paper); opacity:.75; }
-  ${S} .bs-mono { position:absolute; font:600 ${BS_FS}px/1.5 var(--mono); letter-spacing:.22em; text-transform:uppercase; color:var(--ash); white-space:nowrap; }
-  ${S} .bs-mono b { color:var(--paper); font-weight:700; }
-  ${S} .bs-ticks { position:absolute; width:26px; height:${SCAN_H}px; top:${SCAN_TOP}px;
-    background:repeating-linear-gradient(to bottom, rgba(var(--paper-rgb),.38) 0 2px, transparent 2px 14px); transform-origin:50% 0; }
-  ${S} .bs-fp path { fill:none; stroke-width:3; stroke-linecap:butt; }
-  ${S} .bs-st { position:absolute; top:0; right:0; white-space:nowrap; }
-  ${S} .bs-px { position:absolute; width:18px; height:18px; }
-</style>
-<div class="eyebrow abs bs-eye" style="left:${M}px;top:${lay(128, 40)}px">Runner check-in</div>
-<div class="bs-mono abs bs-l1" style="left:${M}px;top:${lay(186, 100)}px">Runner ID <b>001</b><br>${esc(C.brand.title)}<br>Sensor 500 dpi</div>
-<div class="bs-mono abs bs-r1" style="right:${M}px;top:${lay(128, 100)}px;text-align:right">Check-in <b>01 / 05</b><br>Timing chip <b>linked</b></div>
-
-<div class="bs-ticks bs-t" style="left:${FP_L - 60}px"></div>
-<div class="bs-ticks bs-t" style="left:${FP_L + 594}px"></div>
-${brk(FP_L - 40, SCAN_TOP - 40, "3px 0 0 3px")}${brk(FP_L + 536, SCAN_TOP - 40, "3px 3px 0 0")}${brk(FP_L - 40, SCAN_TOP + 676, "0 0 3px 3px")}${brk(FP_L + 536, SCAN_TOP + 676, "0 3px 3px 0")}
-<i class="bs-px" style="left:${FP_L + 558}px;top:${SCAN_TOP - 40}px;background:var(--cyan)"></i>
-<i class="bs-px" style="left:${FP_L + 576}px;top:${SCAN_TOP - 22}px;background:var(--lime)"></i>
-<i class="bs-px" style="left:${FP_L - 18}px;top:${SCAN_TOP + 704}px;background:var(--orange)"></i>
-
-<svg class="abs bs-fp" style="left:${FP_L}px;top:${SCAN_TOP}px;filter:drop-shadow(0 0 7px rgba(var(--lime-rgb),.55))" width="560" height="700" viewBox="0 0 560 700">
-  <defs>
-    <clipPath id="bsFpShape"><ellipse cx="280" cy="350" rx="272" ry="338"/></clipPath>
-    <clipPath id="bsClip"><rect class="bs-clip" x="0" y="0" width="560" height="0"/></clipPath>
-  </defs>
-  <g clip-path="url(#bsFpShape)">
-    <g class="fpb" style="stroke:rgba(var(--paper-rgb),.26)">${paths}</g>
-    <g clip-path="url(#bsClip)"><g class="fpr" style="stroke:var(--lime)">${paths}</g></g>
-  </g>
-</svg>
-<div class="scanline bs-scan" style="top:${SCAN_TOP}px${PORTRAIT ? `;left:${FP_L - 20}px;right:auto;width:600px` : ""}"></div>
-
-<div class="abs bs-num" style="left:${M}px;top:${lay(740, 1150)}px;display:flex;align-items:flex-end;gap:14px">
-  <div class="mono" style="position:absolute;left:0;top:${lay(-40, -50)}px;font-size:${lay(18, 28)}px;color:var(--ash);white-space:nowrap">Check-in progress</div>
-  <span class="pixel bs-val" style="font-size:${lay(190, 170)}px;line-height:.82">00</span>
-  <span class="pixel" style="font-size:72px;line-height:.9;color:var(--lime)">%</span>
-</div>
-
-<div class="bs-mono abs bs-r2" style="right:${M}px;top:${lay(690, 1130)}px;text-align:right;line-height:1.9">
-  Stride <b>mapped</b><br>
-  Ridges <b class="bs-min">000</b><br>
-  <span style="position:relative;display:inline-block;min-width:${lay(330, 420)}px;height:${lay(38, 57)}px">
-    <span class="bs-st bs-s1">Status <b style="color:var(--lime)">scanning</b></span>
-    <span class="bs-st bs-s2">Status <b style="color:var(--lime)">cleared</b></span>
-  </span>
-</div>`;
-}
-
-// FP_SPEED scales every beat of the scan (1 = the original 2.4s scene); main.js BOOT_GATE uses the same factor
-export const FP_SPEED = 0.55;
-const fp = (v) => +(v * FP_SPEED).toFixed(3);
-function biometricAnim(root, tl) {
-  const rect = q(root, ".bs-clip");
-  const scan = q(root, ".bs-scan");
-  const val = q(root, ".bs-val");
-  const minu = q(root, ".bs-min");
-
-  tl.from(qa(root, ".bs-eye, .bs-l1, .bs-r1"), { opacity: 0, x: -24, duration: fp(0.5), ease: "power3.out", stagger: fp(0.08) }, fp(0.05));
-  tl.from(qa(root, ".bs-br"), { opacity: 0, scale: 1.4, duration: fp(0.5), ease: "power3.out", stagger: fp(0.05) }, fp(0.05));
-  tl.from(qa(root, ".bs-px"), { scale: 0, duration: fp(0.25), ease: "steps(3)", stagger: fp(0.12) }, fp(0.3));
-  tl.from(qa(root, ".bs-t"), { scaleY: 0, duration: fp(0.7), ease: "power3.out" }, fp(0.15));
-  tl.from(qa(root, ".fpb path"), { strokeDashoffset: 1, duration: fp(0.9), ease: "power2.out", stagger: fp(0.035) }, fp(0.1));
-  tl.from(qa(root, ".fpr path"), { strokeDashoffset: 1, duration: fp(0.9), ease: "power2.out", stagger: fp(0.035) }, fp(0.1));
-
-  // scan sweep: lime reveal clip and the scanline travel together
-  tl.fromTo(rect, { attr: { height: 0 } }, { attr: { height: SCAN_H }, duration: fp(2), ease: "power1.inOut", immediateRender: false }, fp(0.3));
-  tl.fromTo(scan, { y: 0 }, { y: SCAN_H, duration: fp(2), ease: "power1.inOut" }, fp(0.3));
-  tl.fromTo(scan, { opacity: 0 }, { opacity: 1, duration: 0.1, ease: "none" }, fp(0.3));
-
-  tl.from(q(root, ".bs-num"), { opacity: 0, y: 30, duration: fp(0.5), ease: "power3.out" }, fp(0.1));
-  count(tl, (v) => { val.textContent = pad(Math.round(v)); }, 0, 97, fp(0.15), fp(2.15), "power2.out");
-  count(tl, (v) => { val.textContent = v >= 99.5 ? "100" : pad(Math.round(v)); }, 97, 100, fp(2.3), fp(0.1));
-
-  tl.from(q(root, ".bs-r2"), { opacity: 0, x: 24, duration: fp(0.5), ease: "power3.out" }, fp(0.5));
-  count(tl, (v) => { minu.textContent = pad(Math.round(v), 3); }, 0, 142, fp(0.3), fp(1.9), "power1.out");
-  tl.fromTo(q(root, ".bs-s2"), { opacity: 0 }, { opacity: 1, duration: 0.01 }, fp(2.0));
-  tl.fromTo(q(root, ".bs-s1"), { opacity: 1 }, { opacity: 0, duration: 0.01, immediateRender: false }, fp(2.0));
-}
 
 // ---------- 02 / 03 shared "READY / SET." block ----------
 const READY = "READY", SET = "SET.";
 const CX = SW / 2, CY = DH / 2;                // frame centre
 const RB_X = lay(200, 60);                     // corner brackets inset from the sides
-const RB_FS = lay(250, 220);                   // READY / SET type size
+// READY / SET type size: portrait fills the frame width inside the 90px side margins (Tiny5 READY runs ~3.1em)
+const RB_FS = lay(248, 288);
+const RB_H = Math.round(RB_FS * 0.824);        // one READY / SET line
+// vertical offsets from the frame centre (desktop keeps its original rhythm; portrait follows the bigger type)
+const RB = lay(
+  { top: 320, eye: 278, bar: 260, foot: 296, bot: 296 },
+  { top: RB_H + 104, eye: RB_H + 64, bar: RB_H + 24, foot: RB_H + 60, bot: RB_H + 64 },
+);
 function readyBlock(p) {
   const br = (l, t, bw) => `<i class="${p}br" style="position:absolute;left:${l}px;top:${t}px;width:64px;height:64px;border:0 solid var(--lime);border-width:${bw}"></i>`;
   const line = `position:absolute;left:0;width:${SW}px;text-align:center;white-space:nowrap;font-size:${RB_FS}px;line-height:.82`;
-  const top = CY - lay(320, 290), bot = CY + lay(296, 270), right = SW - RB_X - 64;
+  const top = CY - RB.top, bot = CY + RB.bot, right = SW - RB_X - 64;
   return `
 <div class="${p}grp" style="position:absolute;inset:0;transform-origin:${CX}px ${CY}px">
   ${br(RB_X, top, "4px 0 0 4px")}${br(right, top, "4px 4px 0 0")}${br(RB_X, bot, "0 0 4px 4px")}${br(right, bot, "0 4px 4px 0")}
-  <div class="eyebrow ${p}eye" style="position:absolute;left:0;width:${SW}px;justify-content:center;top:${CY - lay(278, 250)}px">Runner cleared</div>
-  <div class="pixel ${p}l1" style="${line};top:${CY - Math.round(RB_FS * 0.824)}px">${READY}</div>
+  <div class="eyebrow ${p}eye" style="position:absolute;left:0;width:${SW}px;justify-content:center;top:${CY - RB.eye}px;font-size:${lay(20, 28)}px">Runner cleared</div>
+  <div class="pixel ${p}l1" style="${line};top:${CY - RB_H}px">${READY}</div>
   <div class="pixel ${p}l2" style="${line};top:${CY}px;color:var(--lime)">${SET}</div>
-  <div class="grad-bg ${p}bar" style="position:absolute;left:${CX - lay(300, 240)}px;width:${lay(600, 480)}px;top:${CY + lay(260, 232)}px;height:6px;transform-origin:0 50%"></div>
-  <div class="mono ${p}foot" style="position:absolute;left:0;width:${SW}px;text-align:center;top:${CY + lay(296, 266)}px;font-size:${lay(18, 26)}px;color:var(--ash)">Check-in complete &nbsp;·&nbsp; start line open</div>
+  <div class="grad-bg ${p}bar" style="position:absolute;left:${CX - lay(300, 240)}px;width:${lay(600, 480)}px;top:${CY + RB.bar}px;height:6px;transform-origin:0 50%"></div>
+  <div class="mono ${p}foot" style="position:absolute;left:0;width:${SW}px;text-align:center;top:${CY + RB.foot}px;font-size:${lay(20, 28)}px;color:var(--ash)">Check-in complete &nbsp;·&nbsp; start line open</div>
   <i class="${p}line" style="position:absolute;left:${lay(160, 60)}px;width:${SW - 2 * lay(160, 60)}px;top:${CY - 1}px;height:3px;background:var(--lime);box-shadow:0 0 22px var(--lime),0 0 50px var(--lime);opacity:0"></i>
 </div>`;
 }
@@ -159,7 +53,7 @@ function collapseHtml() {
 <i class="cd-hx" style="position:absolute;left:${CX - 200}px;width:400px;top:${CY - 1}px;height:1px;background:rgba(var(--paper-rgb),.45)"></i>
 <i class="cd-vx" style="position:absolute;top:${CY - 200}px;height:400px;left:${CX - 1}px;width:1px;background:rgba(var(--paper-rgb),.45)"></i>
 <i class="cd-dot" style="position:absolute;left:${CX - 12}px;top:${CY - 12}px;width:24px;height:24px;border-radius:50%;background:var(--lime);box-shadow:0 0 27px var(--lime),0 0 70px rgba(var(--lime-rgb),.65);z-index:12"></i>
-<div class="mono cd-cap" style="position:absolute;left:0;width:${SW}px;text-align:center;top:${CY + 90}px;font-size:${lay(18, 28)}px;color:var(--ash)">Start line &nbsp;·&nbsp; KM 0</div>`;
+<div class="mono cd-cap" style="position:absolute;left:0;width:${SW}px;text-align:center;top:${CY + 90}px;font-size:${lay(20, 28)}px;color:var(--ash)">Start line &nbsp;·&nbsp; KM 0</div>`;
 }
 
 function collapseAnim(root, tl) {
@@ -181,30 +75,23 @@ function collapseAnim(root, tl) {
   tl.from(q(root, ".cd-cap"), { opacity: 0, y: 12, duration: 0.4, ease: "power3.out" }, 1.25);
 }
 
-// ---------- 04 name (hero on lime): the "first page" with every key detail and the register button ----------
-const NAME_FS = lay(270, 240);  // TECH / RUN (Tektur 900 condensed)
-const YEAR_FS = lay(204, 180);  // 2027 (Tiny5), sized to sit under TECH
-const PERIOD_EM = 0.2;          // full stop, relative to YEAR_FS
-// hero layout: desktop keeps the type left, register block centred, legs top right; portrait stacks
-// type, register block and copy, with the legs striding in beside TECH / RUN
+// ---------- 04 name (hero on lime): the "first page" with every key detail and the waitlist button ----------
+// brand wordmark: TECH / RUN in Tiny5 (pixel), 2027 in Tektur spaced wide
+const NAME_FS = lay(272, 204);   // TECH / RUN (Tiny5); portrait sets TECHRUN on one line
+const YEAR_FS = lay(196, 168);   // 2027 (Tektur), about as wide as TECH on desktop
+const YEAR_LS = lay(0.3, 0.5);   // 2027 letter spacing (em)
+const LOGO_RATIO = 363 / 193;    // C.assets.logo.black is 363 x 193
+// desktop keeps the type left, the waitlist block centred and the runner top right under the rule;
+// portrait centres every element in one column
 const NM = lay(
-  { m: 130, markX: 112, markY: 78, mark: 96, metaX: 214, metaY: 110, metaFs: 20, ruleY: 166, ruleW: 760, blockY: 236,
-    legs: [1000, -70, 1000], ctaX: 750, ctaY: 384, ctaW: 420, chipFs: 40, chipW: 112, regH: 108, regFs: 38, noteFs: 16, partnerH: 58,
-    titleX: 1240, titleY: 716, titleW: 590, tagFs: 40, botY: 900 },
-  { m: 90, markX: 90, markY: 24, mark: 80, metaX: 186, metaY: 50, metaFs: 26, ruleY: 120, ruleW: 900, blockY: 160,
-    legs: [470, 150, 610], ctaX: 90, ctaY: 762, ctaW: 900, chipFs: 52, chipW: 170, regH: 120, regFs: 52, noteFs: 24, partnerH: 56,
-    titleX: 90, titleY: 1214, titleW: 900, tagFs: 40, botY: 1315, botFs: 22 },
+  { m: 130, logoX: 130, logoY: 58, logoH: 76, metaX: 300, metaY: 80, metaFs: 20, ruleY: 166, ruleW: 1660, blockY: 236,
+    runX: 1534, runY: 172, runS: 256, ctaX: 940, ctaY: 420, ctaW: 420, regH: 108, regFs: 40, noteFs: 16, partnerH: 56,
+    titleX: 1240, titleY: 716, titleW: 590, eyeFs: 20, tagFs: 40, botY: 900, botFs: 20 },
+  { m: 90, logoX: 465, logoY: 40, logoH: 80, metaX: 0, metaY: 144, metaFs: 24, ruleY: 212, ruleW: 900, blockY: 404,
+    runX: 468, runY: 224, runS: 144, ctaX: 90, ctaY: 800, ctaW: 900, regH: 120, regFs: 52, noteFs: 24, partnerH: 56,
+    titleX: 90, titleY: 1136, titleW: 900, eyeFs: 28, tagFs: 40, botY: 1284, botFs: 24 },
 );
 const REG_W = lay(420, 640);
-// pixel bits around the runner's feet (stage px for the desktop legs, size, colour token); re-mapped onto the portrait legs
-const PIXELS = [
-  [1236, 548, 30, "ink"], [1198, 590, 20, "cyan"], [1290, 610, 16, "orange"], [1520, 548, 14, "ink"],
-  [1716, 470, 28, "ink"], [1768, 430, 18, "orange"], [1668, 516, 14, "cyan"], [1800, 520, 12, "ink"],
-  [1420, 600, 20, "ink"], [1460, 566, 12, "cyan"],
-].map(([x, y, sz, c]) => {
-  const [lx, ly, lw] = NM.legs, k = lw / 1000;
-  return [Math.round(lx + (x - 1000) * k), Math.round(ly + (y + 70) * k), Math.max(10, Math.round(sz * lay(1, 0.9))), c];
-});
 
 // main hero button: the waitlist dialog until REGISTER_URL is set in content.js, then the registration link
 const ARROW = `<svg width="34" height="34" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 18 18 6M8 6h10v10" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="square"/></svg>`;
@@ -217,28 +104,32 @@ function heroCta(R, WL, B) {
   <div class="nm-note nm-c">${esc(WL.note)}</div>`;
 }
 
+const word = (t) => `<span class="mask nm-m"><span>${esc(t)}</span></span>`;
+
 function nameHtml(C) {
   const B = C.brand, L = B.lines, A = C.assets, O = C.organizer, R = C.register, WL = C.waitlist;
   const S = '.scene[data-slug="name"]';
-  const px = PIXELS.map(([x, y, s, c]) => `<i class="nm-px" style="left:${x}px;top:${y}px;width:${s}px;height:${s}px;background:var(--${c})"></i>`).join("");
-  const dist = C.categories.map((c) => `<a class="nm-d" ${linkAttrs(c.url)} aria-label="Register for the ${esc(c.name)} ${esc(c.label)}">${esc(c.name)}</a>`).join("");
+  const logoW = Math.round(NM.logoH * LOGO_RATIO);
+  const align = PORTRAIT ? "center" : "left";
+  const flexAlign = PORTRAIT ? "center" : "flex-start";
+  // portrait sets the wordmark as one word (TECHRUN) so the column keeps room to breathe
+  const tech = PORTRAIT
+    ? `<div class="pixel nm-tech nm-one">${word(L[0])}${word(L[1])}</div>`
+    : `<div class="pixel nm-tech">${word(L[0])}</div><div class="pixel nm-tech">${word(L[1])}</div>`;
+  const metaPos = PORTRAIT ? `;width:${SW}px;text-align:center` : "";
+  const blockPos = PORTRAIT ? `left:0;width:${SW}px;transform-origin:50% 100%` : `left:${NM.m}px;transform-origin:0 100%`;
   return `
 <style>
   ${S} .nm-meta { position:absolute; font:600 ${NM.metaFs}px/1.6 var(--mono); letter-spacing:.22em; text-transform:uppercase; color:var(--ink); white-space:nowrap; }
-  ${S} .nm-tech { font-size:${NAME_FS}px; line-height:.84; }
-  ${S} .nm-year { font-size:${YEAR_FS}px; line-height:.8; letter-spacing:.06em; margin-left:-.02em; }
-  ${S} .nm-row { display:flex; align-items:flex-end; }
-  ${S} .nm-pw { position:relative; display:inline-block; width:${PERIOD_EM}em; height:${PERIOD_EM}em; margin-left:.02em; margin-bottom:.02em; font-size:${YEAR_FS}px; }
+  ${S} .nm-tech { font-size:${NAME_FS}px; line-height:.84; letter-spacing:.02em; }
+  ${S} .nm-one { display:flex; justify-content:center; }
+  ${S} .nm-year { font:700 ${YEAR_FS}px/.8 var(--sans); letter-spacing:${YEAR_LS}em; margin-right:-${YEAR_LS}em; }
+  ${S} .nm-row { display:flex; align-items:flex-end; justify-content:${flexAlign}; }
+  ${S} .nm-pw { position:relative; display:inline-block; width:0; height:.4em; font-size:${YEAR_FS}px; }
   ${S} .nm-pw .iris { width:3400px; height:3400px; background:var(--ink); z-index:30; margin:0; border-radius:0; }
-  ${S} .nm-px { position:absolute; z-index:3; }
-  ${S} .nm-legs { position:absolute; left:${NM.legs[0]}px; top:${NM.legs[1]}px; width:${NM.legs[2]}px; height:auto; z-index:2; mix-blend-mode:multiply; }
-  ${S} .nm-cta { position:absolute; left:${NM.ctaX}px; top:${NM.ctaY}px; width:${NM.ctaW}px; z-index:6; display:grid; justify-items:center; gap:${lay(22, 20)}px; text-align:center; }
-  ${S} .nm-cta .eyebrow { color:var(--ink); }
-  ${S} .nm-dists { display:flex; gap:${lay(12, 20)}px; }
-  ${S} a.nm-d { font:400 ${NM.chipFs}px/1 var(--pixel); color:var(--ink); text-decoration:none; border:3px solid var(--ink); padding:14px 20px 10px; min-width:${NM.chipW}px;
-    transition:background-color .2s, color .2s; }
-  ${S} a.nm-d:hover, ${S} a.nm-d:focus-visible { background:var(--ink); color:var(--lime); }
-  ${S} .nm-reg { position:relative; display:flex; border:0; padding:0; cursor:inherit; white-space:nowrap; align-items:center; justify-content:center; gap:18px; width:${REG_W}px; height:${NM.regH}px;
+  ${S} .nm-run { position:absolute; left:${NM.runX}px; top:${NM.runY}px; width:${NM.runS}px; height:${NM.runS}px; z-index:2; image-rendering:pixelated; }
+  ${S} .nm-cta { position:absolute; left:${NM.ctaX}px; top:${NM.ctaY}px; width:${NM.ctaW}px; z-index:6; display:grid; justify-items:center; gap:${lay(20, 24)}px; text-align:center; }
+  ${S} .nm-reg { position:relative; display:flex; border:0; padding:0; white-space:nowrap; align-items:center; justify-content:center; gap:18px; width:${REG_W}px; height:${NM.regH}px;
     background:var(--ink); color:var(--lime); text-decoration:none; font:900 ${NM.regFs}px/1 var(--sans); font-stretch:75%; letter-spacing:.02em;
     text-transform:uppercase; box-shadow:0 18px 40px rgba(var(--ink-rgb),.28); transition:color .2s, transform .2s; }
   ${S} .nm-reg::after { content:""; position:absolute; left:0; right:0; bottom:0; height:8px; background:var(--grad); }
@@ -246,61 +137,57 @@ function nameHtml(C) {
   ${S} .nm-reg:hover, ${S} .nm-reg:focus-visible { color:var(--ink); transform:translateY(-3px); }
   ${S} .nm-reg:hover::before, ${S} .nm-reg:focus-visible::before { opacity:1; }
   ${S} .nm-reg span, ${S} .nm-reg svg { position:relative; }
-  ${S} .nm-title .eyebrow { font-size:${lay(20, 26)}px; letter-spacing:${lay(".34em", ".26em")}; }
-  ${S} .nm-partner { display:block; height:${NM.partnerH}px; width:auto; margin-top:${lay(6, 10)}px; }
+  ${S} .nm-title { text-align:${align}; }
+  ${S} .nm-title .eyebrow { font-size:${NM.eyeFs}px; letter-spacing:${lay(".34em", ".26em")}; justify-content:${flexAlign}; }
+  ${S} .nm-partner { display:block; height:${NM.partnerH}px; width:auto; margin-top:${lay(4, 8)}px; }
   ${S} .nm-note { margin-top:8px; white-space:nowrap; font:600 ${NM.noteFs}px/1.4 var(--mono); letter-spacing:.2em; text-transform:uppercase; color:rgba(var(--ink-rgb),.72); }
 </style>
-<img class="nm-mark" src="${esc(A.markSolid)}" alt="" width="${NM.mark}" height="${NM.mark}" style="position:absolute;left:${NM.markX}px;top:${NM.markY}px;width:${NM.mark}px;height:${NM.mark}px">
-<div class="nm-meta nm-top" style="left:${NM.metaX}px;top:${NM.metaY}px">${esc(O.label)} ${esc(B.org)}</div>
-<i class="nm-rule" style="position:absolute;left:${NM.m}px;width:${NM.ruleW}px;top:${NM.ruleY}px;height:3px;background:var(--ink);transform-origin:0 50%"></i>
+<img class="nm-mark" src="${esc(A.logo.black)}" alt="${esc(B.name)}" width="${logoW}" height="${NM.logoH}" style="position:absolute;left:${NM.logoX}px;top:${NM.logoY}px;width:${logoW}px;height:${NM.logoH}px">
+<div class="nm-meta nm-top" style="left:${NM.metaX}px;top:${NM.metaY}px${metaPos}">${esc(O.label)} ${esc(B.org)}</div>
+<i class="nm-rule" style="position:absolute;left:${NM.m}px;width:${NM.ruleW}px;top:${NM.ruleY}px;height:3px;background:var(--ink);transform-origin:${lay("0", "50%")} 50%"></i>
 
-<img class="nm-legs" data-bleed src="${esc(A.runnerLegs)}" alt="" width="1000" height="666">
-${px}
+<img class="nm-run" src="${esc(A.runnerStatic.cyber)}" alt="" width="256" height="256">
 
-<div class="nm-block" style="position:absolute;left:${NM.m}px;top:${NM.blockY}px;z-index:5;transform-origin:0 100%">
-  <div class="mega nm-tech"><span class="mask nm-m"><span>${esc(L[0])}</span></span></div>
-  <div class="mega nm-tech"><span class="mask nm-m"><span>${esc(L[1])}</span></span></div>
-  <div class="nm-row" style="margin-top:22px">
-    <div class="pixel nm-year"><span class="mask nm-m"><span>${esc(L[2])}</span></span></div>
-    <span class="nm-pw"><i class="iris nm-iris" style="left:50%;top:50%"></i></span>
+<div class="nm-block" style="position:absolute;${blockPos};top:${NM.blockY}px;z-index:5">
+  ${tech}
+  <div class="nm-row" style="margin-top:${lay(24, 28)}px">
+    <div class="nm-year">${word(L[2])}</div>
+    <span class="nm-pw"><i class="iris nm-iris" style="left:0;top:50%"></i></span>
   </div>
 </div>
 
 <div class="nm-cta">
-  <div class="eyebrow nm-c">Pick your distance</div>
-  <div class="nm-dists nm-c">${dist}</div>
   ${heroCta(R, WL, B)}
   <img class="nm-partner nm-c" src="${esc(A.irunph)}" alt="iRunPH" width="439" height="160">
 </div>
 
 <div class="nm-title" style="position:absolute;left:${NM.titleX}px;top:${NM.titleY}px;width:${NM.titleW}px;z-index:4">
   <div class="eyebrow">${esc(O.line)}</div>
-  <p style="margin:24px 0 0;font:600 ${NM.tagFs}px/1.18 var(--sans);color:var(--ink)">${esc(B.tagline)}</p>
+  <p style="margin:${lay(24, 20)}px 0 0;font:600 ${NM.tagFs}px/1.2 var(--sans);color:var(--ink)">${esc(B.tagline)}</p>
 </div>
-<div class="nm-meta nm-bot" style="left:${NM.titleX}px;top:${NM.botY}px;white-space:normal;width:${NM.titleW}px${NM.botFs ? `;font-size:${NM.botFs}px;line-height:1.5` : ""}">${esc(C.location.city)}, ${esc(C.location.country)}<br>${esc(C.location.venue)} &nbsp;·&nbsp; ${esc(O.date)}</div>`;
+<div class="nm-meta nm-bot" style="left:${NM.titleX}px;top:${NM.botY}px;white-space:normal;width:${NM.titleW}px;text-align:${align};font-size:${NM.botFs}px;line-height:1.6">${esc(C.location.city)}, ${esc(C.location.country)}<br>${esc(C.location.venue)} &nbsp;·&nbsp; ${esc(O.date)}</div>`;
 }
 
 function nameAnim(root, tl) {
-  const fsW = (YEAR_FS * PERIOD_EM) / 3400; // iris scale that matches the full stop
   const iris = q(root, ".nm-iris");
-  tl.set(iris, { xPercent: -50, yPercent: -50 }, 0);
+  const run = q(root, ".nm-run");
+  // the iris stays hidden until the flood: no visible full stop after 2027
+  tl.set(iris, { xPercent: -50, yPercent: -50, scale: 0 }, 0);
   tl.from(q(root, ".nm-rule"), { scaleX: 0, duration: 0.8, ease: "power4.out" }, 0.1);
-  tl.from(q(root, ".nm-mark"), { opacity: 0, x: -20, duration: 0.5, ease: "power3.out" }, 0.1);
+  tl.from(q(root, ".nm-mark"), { opacity: 0, x: lay(-20, 0), y: lay(0, -16), duration: 0.5, ease: "power3.out" }, 0.1);
   tl.from(qa(root, ".nm-top"), { opacity: 0, y: -14, duration: 0.5, ease: "power3.out" }, 0.15);
   tl.from(qa(root, ".nm-m > span"), { yPercent: 118, duration: 0.8, ease: "power4.out", stagger: 0.14 }, 0.0);
-  // runner strides in from the right, pixels pop around the feet
-  tl.from(q(root, ".nm-legs"), { x: 260, opacity: 0, duration: 1.0, ease: "power4.out" }, 0.1);
-  tl.from(qa(root, ".nm-px"), { scale: 0, duration: 0.2, ease: "steps(2)", stagger: 0.04 }, 0.55);
-  // register block rises in the middle of the frame, ready by the landing rest (1.5s)
+  // the pixel runner dashes in along the rule from the left
+  tl.from(run, { x: lay(-900, -520), opacity: 0, duration: 1.0, ease: "power4.out" }, 0.15);
+  // waitlist block rises in the middle of the frame, ready by the landing rest (1.5s)
   tl.from(qa(root, ".nm-c"), { opacity: 0, y: 26, duration: 0.5, ease: "power3.out", stagger: 0.08 }, 0.6);
-  tl.from(q(root, ".nm-title"), { opacity: 0, x: 40, duration: 0.6, ease: "power3.out" }, 0.7);
+  tl.from(q(root, ".nm-title"), { opacity: 0, x: lay(40, 0), y: lay(0, 20), duration: 0.6, ease: "power3.out" }, 0.7);
   tl.from(q(root, ".nm-bot"), { opacity: 0, y: 16, duration: 0.5, ease: "power3.out" }, 0.85);
-  // full stop pops in, then (post rest) swells to flood the frame in ink
-  tl.fromTo(iris, { scale: 0 }, { scale: fsW, duration: 0.35, ease: "back.out(3)" }, 0.9);
   tl.fromTo(q(root, ".nm-block"), { scale: 1 }, { scale: 1.035, duration: 1.0, ease: "sine.inOut", immediateRender: false }, 1.55);
-  tl.fromTo(q(root, ".nm-legs"), { x: 0 }, { x: -60, duration: 1.4, ease: "sine.inOut", immediateRender: false }, 1.55);
-  tl.fromTo(iris, { scale: fsW }, { scale: 1, duration: 0.85, ease: "power3.in", immediateRender: false }, 2.5);
-  // the register block sits above the type's stacking context, so it leaves with the flood (and stops taking clicks)
+  tl.fromTo(run, { x: 0 }, { x: lay(60, 40), duration: 1.4, ease: "sine.inOut", immediateRender: false }, 1.55);
+  // post rest: the ink flood grows from a point at the end of 2027
+  tl.fromTo(iris, { scale: 0 }, { scale: 1, duration: 0.85, ease: "power3.in", immediateRender: false }, 2.5);
+  // the waitlist block sits above the type's stacking context, so it leaves with the flood (and stops taking clicks)
   tl.fromTo(q(root, ".nm-cta"), { autoAlpha: 1 }, { autoAlpha: 0, duration: 0.35, ease: "power2.in", immediateRender: false }, 2.6);
 }
 
@@ -317,7 +204,7 @@ const CELLS = [
 const WB_MAX_FS = 164, WB_LIVE_W = 740, WB_GLYPH_EM = 0.62, WB_STOP_EM = 0.2;
 const wordFs = (words) => {
   const longest = Math.max(...words.map((w) => w.length));
-  return Math.min(WB_MAX_FS, Math.floor(WB_LIVE_W / (WB_GLYPH_EM * longest + WB_STOP_EM)));
+  return Math.min(WB_MAX_FS, Math.floor(WB_LIVE_W / (WB_GLYPH_EM * longest + WB_STOP_EM) / 4) * 4);
 };
 
 function burstHtml(C) {
@@ -347,9 +234,8 @@ function burstAnim(root, tl) {
 
 // ---------- export ----------
 export function scenes(C) {
-  const base = { stars: false, ammo: 0, turn: null, rest: null, restAt: null, shoe: false };
+  const base = { stars: false, turn: null, rest: null, restAt: null, shoe: false };
   return [
-    { ...base, slug: "biometric-scan", name: "Runner check-in", act: "00 · Check-in", field: "ink", dur: fp(2.4), html: biometricHtml(C), anim: biometricAnim },
     { ...base, slug: "access-granted", name: "Ready, set", act: "00 · Check-in", field: "ink", dur: 1.2, html: accessHtml(), anim: accessAnim },
     { ...base, slug: "collapse-to-the-dot", name: "Collapse to the dot", act: "00 · Check-in", field: "ink", dur: 1.8, stars: true, html: collapseHtml(), anim: collapseAnim },
     {

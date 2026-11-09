@@ -1,26 +1,35 @@
-// Engine: builds the 24 scenes, fits the stage, maps scroll to film time, draws the overlays.
+// Engine: builds the scenes, fits the stage, maps scroll to film time, draws the overlays.
 import { CONTENT as C } from "./content.js";
 import { buildAll } from "./scenes/index.js";
-import { FP_SPEED } from "./scenes/boot.js";
 import { IDLE_POSE, makePoser, clamp, esc } from "./scenes/util.js";
 import { FIELD_BG, LIGHT_FIELDS, rgba } from "./palette.js";
 import { initWaitlist } from "./waitlist.js";
 import { PORTRAIT, PORTRAIT_QUERY, PORTRAIT_TOP, PORTRAIT_BOTTOM, SW, SH, DH } from "./stage.js";
 
-const SCENE_PX = 850;          // scroll px for a 2.5s scene; others scale with duration (clamped)
-const HOLD_PX = 600;           // extra scroll a resting frame stays put for
+const SCENE_PX = 520;          // scroll px for a 2.5s scene; others scale with duration (clamped)
+const HOLD_PX = 360;           // extra scroll a resting frame stays put for
 const IRIS_SEC = 0.55;         // length of the scene-to-scene iris
 const IRIS_SIZE = 4500;        // iris circle diameter, stage px
-const BOOT_GATE = ["biometric-scan", 2.3 * FP_SPEED]; // the 97% hold, scaled with the scan
+const FILM_START = "access-granted"; // the film opens on READY / SET.
+const BOOT_GATE = [FILM_START, 0.6];  // autoplay holds here until the 3D layer is ready (instant with no shoe scenes)
 const LANDING = ["name", 1.5];
-const GUN_SAFETY_MS = 15000;   // never leave the boot stuck at 97%
+const GUN_SAFETY_MS = 15000;   // never leave the boot held at the gate
 const COLOR = FIELD_BG;
 const REST_SLUG = "laced-rest";
+// 90s wallpaper behind each page: [C.assets.bg key, field colour washed over it, wash opacity override].
+// Intro scenes (access-granted, collapse-to-the-dot) stay plain ink.
+const WALLPAPERS = {
+  name: ["bliss", "lime"], "distances-rest": ["desktop", "ink", 0.88], "showcase-1": ["hills", "paper"],
+  "highlights-rest": ["popups", "cyan"], blast: ["errors", "lime", 0.86],
+};
+const WASH = 0.8;              // default field colour opacity over the wallpaper (keeps text AA legible)
+const WALL_FADE = 0.4;         // s the wallpaper fades in over the scene's solid field (seamless after an iris)
+const WALL_AT = { blast: 0.45 }; // blast floods lime with its own iris first; the wallpaper comes in after it
+const NO_TRACK = new Set(["blast"]); // scenes shown without the progress track and runner
 
 const $ = (id) => document.getElementById(id);
 const stage = $("stage"), viewport = $("viewport"), gunCanvas = $("gun"), starsCanvas = $("stars");
-const hud = $("hud"), ammoEl = $("ammo"), actEl = $("act"), cueEl = $("cue"), cueTextEl = $("cueText"), grainEl = $("grain"), cursorEl = $("cursor");
-const pips = [...ammoEl.querySelectorAll("u")];
+const hud = $("hud"), actEl = $("act"), cueTextEl = $("cueText"), grainEl = $("grain");
 const coarse = matchMedia("(pointer: coarse)").matches;
 const calm = matchMedia("(prefers-reduced-motion: reduce)");
 let still = calm.matches;
@@ -29,7 +38,7 @@ history.scrollRestoration = "manual";
 document.documentElement.classList.add("locked");
 document.documentElement.classList.toggle("portrait", PORTRAIT);
 window.scrollTo(0, 0);
-for (const el of [starsCanvas, gunCanvas, grainEl, cursorEl, hud, cueEl, cueTextEl, ammoEl]) el.setAttribute("aria-hidden", "true");
+for (const el of [starsCanvas, gunCanvas, grainEl, hud, cueTextEl]) el.setAttribute("aria-hidden", "true");
 
 // ---------- shared state ----------
 const state = { ...IDLE_POSE, px: -16 };
@@ -72,6 +81,11 @@ const deferImgs = (html) => html.replace(/<img\b([^>]*?)\ssrc=/g, "<img$1 data-s
 function hydrate(scene) {
   if (!scene || scene.hydrated) return;
   scene.hydrated = true;
+  const wall = scene.root.querySelector(":scope > .scene-bg[data-bg]");
+  if (wall) {
+    wall.style.backgroundImage = `linear-gradient(${wall.dataset.wash}, ${wall.dataset.wash}), url("${wall.dataset.bg}")`;
+    wall.removeAttribute("data-bg");
+  }
   for (const img of scene.root.querySelectorAll("img[data-src]")) {
     img.src = img.dataset.src;
     img.removeAttribute("data-src");
@@ -90,9 +104,28 @@ const mountScene = (s, eager) => {
   root.innerHTML = SH > DH
     ? `<div class="pframe" style="position:absolute;left:0;top:${Math.round((SH - DH) / 2)}px;width:${SW}px;height:${DH}px">${html}</div>`
     : html;
+  addWallpaper(root, s.slug);
   stage.insertBefore(root, gunCanvas);
   return root;
 };
+// full-bleed wallpaper layer under the scene's content; hydrate() sets its image, so boot stays light
+function addWallpaper(root, slug) {
+  const [key, wash, alpha = WASH] = WALLPAPERS[slug] || [];
+  const src = key && C.assets?.bg?.[key];
+  if (!src) return;
+  const el = document.createElement("div");
+  el.className = "scene-bg";
+  el.dataset.bg = src;
+  el.dataset.wash = rgba(wash, alpha);
+  el.setAttribute("aria-hidden", "true");
+  root.classList.add("has-bg");
+  root.prepend(el);
+}
+function fadeWallpaper(root, tl, slug) {
+  const el = root.querySelector(":scope > .scene-bg");
+  if (!el) return;
+  tl.fromTo(el, { opacity: 0 }, { opacity: 1, duration: WALL_FADE, ease: "power1.out", immediateRender: true }, WALL_AT[slug] ?? 0);
+}
 function addIris(root, tl, s, next) {
   const el = document.createElement("div");
   el.className = "iris";
@@ -118,10 +151,11 @@ defs.forEach((s, i) => {
   const root = mountScene(s, i === 0);
   const tl = gsap.timeline({ paused: true });
   try { s.anim?.(root, tl, env); } catch (e) { console.error("anim", s.slug, e); }
+  fadeWallpaper(root, tl, s.slug);
   const next = defs[i + 1];
   if (next && endField(s) !== startField(next)) addIris(root, tl, s, next);
   tl.set({}, {}, s.dur); // the timeline is exactly as long as the scene
-  scenes.push({ ...s, root, tl, t0: acc, field0: startField(s), hydrated: i === 0 });
+  scenes.push({ ...s, root, tl, t0: acc, field0: startField(s), wall: root.querySelector(":scope > .scene-bg"), hydrated: false });
   acc += s.dur;
 });
 const bySlug = Object.fromEntries(scenes.map((s) => [s.slug, s]));
@@ -196,6 +230,8 @@ function fit() {
   stage.style.transform = `translate(${view.ox}px, ${view.oy}px) scale(${s})`;
   stage.style.setProperty("--k", String(1 / s));
   document.body.style.height = `${h + totalPx}px`;
+  // wallpaper layers cover the whole viewport (in stage px), so they line up with #wall in the letterbox margins
+  for (const [k, v] of [["l", -view.ox], ["t", -view.oy], ["w", w], ["h", h]]) stage.style.setProperty(`--bg-${k}`, `${(v / s).toFixed(1)}px`);
   sizeStars();
   gunReal?.setPixelRatio(gunPixelRatio());
   measureTrack();
@@ -235,21 +271,10 @@ function drawStars() {
   }
 }
 
-// ---------- cursor, pointer ----------
-const curX = gsap.quickTo(cursorEl, "x", { duration: 0.15, ease: "power2.out" });
-const curY = gsap.quickTo(cursorEl, "y", { duration: 0.15, ease: "power2.out" });
-gsap.set(cursorEl, { x: mouse.x, y: mouse.y });
-const POINTABLE = "a, button, .chip";
+// ---------- pointer (the 90s pixel cursor itself is pure CSS, see css/style.css) ----------
 addEventListener("pointermove", (e) => {
   mouse.x = e.clientX; mouse.y = e.clientY;
   mouse.nx = (e.clientX / innerWidth) * 2 - 1; mouse.ny = -((e.clientY / innerHeight) * 2 - 1);
-  curX(e.clientX); curY(e.clientY);
-});
-addEventListener("pointerover", (e) => {
-  if (e.target.closest?.(POINTABLE)) gsap.to(cursorEl, { scale: 1.9, duration: 0.25, ease: "power3.out", overwrite: "auto" });
-});
-addEventListener("pointerout", (e) => {
-  if (e.target.closest?.(POINTABLE)) gsap.to(cursorEl, { scale: 1, duration: 0.25, ease: "power3.out", overwrite: "auto" });
 });
 
 // ---------- kit panel + ring (laced-rest) ----------
@@ -364,7 +389,7 @@ function buildAbout() {
   add("h2", "Highlights");
   list(C.highlights.map((x) => [`${x.name} · ${x.category}`, x.url]));
   add("h2", "Race kits");
-  list(C.showcases.map((x) => [`${x.title.join(" ")}: ${x.pitch} (${x.stack})`, x.links?.[0]?.[1]]));
+  list(C.showcases.map((x) => [`${x.title.join(" ")}: ${x.pitch}${x.stack ? ` (${x.stack})` : ""}`, x.links?.[0]?.[1]]));
   add("h2", "Partners");
   list(C.partners.map((x) => [`${x.title}, ${x.issuer}`, x.url]));
   add("h2", "Contact");
@@ -417,7 +442,7 @@ const castFor = (act) => {
 };
 function updateRunner(dt, cueOn) {
   const s = active;
-  const visible = !!s && !autoplay && !cueOn && s.field !== "quad";
+  const visible = !!s && !autoplay && !cueOn && s.field !== "quad" && !NO_TRACK.has(s.slug);
   if (visible !== rs.shown) { runner.classList.toggle("on", visible); track.classList.toggle("on", visible); rs.shown = visible; }
   // smoothed scroll velocity (px/s); decays to zero while the film is not under the scroll's control
   const y = lenis.scroll;
@@ -450,7 +475,17 @@ function updateRunner(dt, cueOn) {
 
 // ---------- film time ----------
 let t = 0, autoplay = true, frozen = false;
-let lastAmmo = -1, lastGunVis = null, lastField = null, lastTone = null, starsOpacity = null;
+let lastGunVis = null, lastField = null, lastTone = null, starsOpacity = null, lastWallImg = null, lastWallA = null;
+// viewport-wide copy of the active page's wallpaper: fills the letterbox margins around the stage
+const wallEl = document.createElement("div");
+wallEl.id = "wall";
+wallEl.setAttribute("aria-hidden", "true");
+function syncWall(s, on) {
+  const img = on ? s.wall.style.backgroundImage : "";
+  if (img && img !== lastWallImg) { wallEl.style.backgroundImage = img; lastWallImg = img; }
+  const a = img ? s.wall.style.opacity || "1" : "0";
+  if (a !== lastWallA) { wallEl.style.opacity = a; lastWallA = a; }
+}
 
 function fieldAt(s, st) {
   let f = s.field0;
@@ -475,22 +510,21 @@ function show(time) {
   const next = scenes[scenes.indexOf(s) + 1];
   const bgField = next && st > s.dur - 0.25 && endField(s) !== startField(next) ? startField(next) : f;
   if (bgField !== lastField) { viewport.style.backgroundColor = COLOR[bgField]; lastField = bgField; }
+  syncWall(s, !!s.wall && bgField === f && f === s.field0); // a turn (e.g. the hero's ink flood) drops the wallpaper
   const tone = `${LIGHT_FIELDS.has(f)}|${s.field === "quad"}`;
   if (tone !== lastTone) {
     lastTone = tone;
-    for (const el of [hud, ammoEl, actEl]) {
+    for (const el of [hud, actEl]) {
       el.classList.toggle("light", LIGHT_FIELDS.has(f));
       el.classList.toggle("off", s.field === "quad");
     }
     track.classList.toggle("light", LIGHT_FIELDS.has(f));
     runner.classList.toggle("light", LIGHT_FIELDS.has(f));
   }
-  const wantStars = f === "ink" && !!(s.stars || (s.turn && s.turn[1] === "ink"));
+  const wantStars = f === "ink" && !s.wall && !!(s.stars || (s.turn && s.turn[1] === "ink"));
   starsWanted = wantStars;
   if (starsOpacity !== wantStars) { starsCanvas.style.opacity = wantStars ? "1" : "0"; starsOpacity = wantStars; }
 
-  const ammo = clamp(Math.round(s.ammo || 0), 0, pips.length);
-  if (ammo !== lastAmmo) { pips.forEach((u, i) => u.classList.toggle("on", i < ammo)); lastAmmo = ammo; }
   const gv = !!s.shoe;
   if (gv !== lastGunVis) { gunCanvas.style.visibility = gv ? "" : "hidden"; gunReal?.setVisible(gv); lastGunVis = gv; }
 
@@ -530,7 +564,6 @@ function frame(now) {
     t = scrollToTime(lenis.scroll);
   }
   const cueOn = !autoplay && !frozen && t < REST_T + 0.15;
-  cueEl.classList.toggle("on", cueOn);
   cueTextEl.classList.toggle("on", cueOn);
   show(t);
   updateRunner(dt, cueOn);
@@ -572,6 +605,7 @@ async function loadGun() {
 makeGrain();
 buildAbout();
 viewport.insertBefore(starsCanvas, stage); // stars sit between the field colour and the (transparent) starry scenes
+viewport.insertBefore(wallEl, starsCanvas);
 stage.style.zIndex = "2";
 for (const el of [stage, gunCanvas]) Object.assign(el.style, { width: `${SW}px`, height: `${SH}px` });
 fit();

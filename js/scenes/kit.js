@@ -81,7 +81,7 @@ function partScene(C, P, part, idx) {
     <ul class="kx-sk" style="left:${T.kx}px;top:${T.ky}px;--rows:${rows}">${itemRows(k)}</ul>`;
   return {
     slug, name: `${k.part} · ${k.group}`, act: ACT, field: "ink", dur,
-    stars: true, ammo: [2, 2, 2, 3, 3, 3][idx], turn: null, rest: null, restAt: null, shoe: true, html,
+    stars: true, turn: null, rest: null, restAt: null, shoe: true, html,
     anim(root, tl) {
       root.classList.add("starry");
       P.pose(tl, 0, 0.95, framePart(part, v), "power3.inOut");
@@ -108,7 +108,7 @@ export function scenes(C, P) {
 
   // ---- 11 kit ----
   const kit = {
-    slug: "kit", name: "The Kit", act: ACT, field: "orange", dur: 2.0, stars: false, ammo: 1,
+    slug: "kit", name: "The Kit", act: ACT, field: "orange", dur: 2.0, stars: false,
     turn: [1.75, "paper"], rest: null, restAt: null, shoe: true,
     html: `
       <div class="iris abs kx-flood" style="z-index:1;left:1046px;top:713px;width:2800px;height:2800px;margin:-1400px 0 0 -1400px;background:var(--paper)"></div>
@@ -142,7 +142,7 @@ export function scenes(C, P) {
   ];
   let tagCache = null;
   const exploded = {
-    slug: "exploded", name: "Exploded", act: ACT, field: "paper", dur: 3.0, stars: false, ammo: 1,
+    slug: "exploded", name: "Exploded", act: ACT, field: "paper", dur: 3.0, stars: false,
     turn: null, rest: null, restAt: null, shoe: true,
     html: `${css("exploded")}
       <div class="eyebrow ink abs kx-x-eb" style="left:110px;top:100px">Exploded view</div>
@@ -201,7 +201,7 @@ export function scenes(C, P) {
       `<span>${pad(i + 1)}</span><span>${esc(C.kit[p].part)}</span></div>`;
   }).join("");
   const laced = {
-    slug: "laced-rest", name: "Laced Up", act: ACT, field: "ink", dur: 4.0, stars: true, ammo: 3,
+    slug: "laced-rest", name: "Laced Up", act: ACT, field: "ink", dur: 4.0, stars: true,
     turn: null, rest: "hover a part to see what's inside", restAt: 1.15, shoe: true,
     html: `${css("laced-rest")}
       <div class="eyebrow abs kx-l-eb" style="left:110px;top:100px">Laced up · ${pad(ORDER.length)} / ${pad(ORDER.length)} parts</div>
