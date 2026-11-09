@@ -28,7 +28,7 @@ export const CONTENT = {
     // 90s wallpapers, one per page (portrait sources, use background-size: cover)
     bg: {
       bliss: "assets/img/bg/bliss.webp", desktop: "assets/img/bg/desktop.webp", computer: "assets/img/bg/computer.webp",
-      popups: "assets/img/bg/popups.webp", errors: "assets/img/bg/errors.webp", paint: "assets/img/bg/paint.webp",
+      icons: "assets/img/bg/icons.webp", terminal: "assets/img/bg/terminal.webp", paint: "assets/img/bg/paint.webp",
       hills: "assets/img/xp-hills.webp",
     },
     // first frame of each pixel runner, for still (non animated) placements

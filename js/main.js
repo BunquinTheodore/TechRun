@@ -20,7 +20,7 @@ const REST_SLUG = "laced-rest";
 // Intro scenes (access-granted, collapse-to-the-dot) stay plain ink.
 const WALLPAPERS = {
   name: ["bliss", "lime"], "distances-rest": ["desktop", "ink", 0.88], "showcase-1": ["hills", "paper"],
-  "highlights-rest": ["popups", "cyan"], blast: ["errors", "lime", 0.86],
+  "highlights-rest": ["icons", "cyan"], blast: ["terminal", "lime", 0.86],
 };
 const WASH = 0.8;              // default field colour opacity over the wallpaper (keeps text AA legible)
 const WALL_FADE = 0.4;         // s the wallpaper fades in over the scene's solid field (seamless after an iris)
