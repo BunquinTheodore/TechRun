@@ -198,7 +198,7 @@ function starSvg(id) {
   return `<svg viewBox="0 0 200 200" aria-hidden="true">${gradDefs(id)}<polygon fill="url(#${id})" points="${pts.join(" ")}"/></svg>`;
 }
 const badgeHtml = (id, big, small, left, top, size) =>
-  `<div class="hl-badge" style="left:${left}px;top:${top}px;width:${size}px;height:${size}px">${starSvg(id)}<div class="hl-bt"><b>${esc(big)}</b><small>${esc(small)}</small></div></div>`;
+  `<div class="hl-badge" style="left:${left}px;top:${top}px;width:${size}px;height:${size}px">${starSvg(id)}<div class="hl-bt"><b>${esc(big)}</b>${small ? `<small>${esc(small)}</small>` : ""}</div></div>`;
 
 // 90s CRT monitor, drawn in CSS. Beige case plastic is the one exception to the brand palette (the client asked
 // for a beige 90s monitor); everything on the screen uses brand colours.
@@ -291,7 +291,7 @@ ${S} .hl-win .body img{left:0;top:0;width:100%;height:100%}
 ${S} .hl-badge{position:absolute;z-index:5;color:var(--ink)}
 ${S} .hl-badge svg{position:absolute;inset:0;width:100%;height:100%}
 ${S} .hl-badge .hl-bt{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}
-${S} .hl-badge b{font:900 76px/.9 var(--sans);font-stretch:75%;letter-spacing:-.02em;text-transform:uppercase}
+${S} .hl-badge b{max-width:150px;font:900 56px/.88 var(--sans);font-stretch:75%;letter-spacing:-.02em;text-transform:uppercase}
 ${S} .hl-badge small{margin-top:8px;max-width:150px;font:700 16px/1.2 var(--mono);letter-spacing:.12em;text-transform:uppercase}${PORTRAIT ? `
 ${S} .hl-ghost{display:none}
 ${S} .hl-pitch{font-size:36px}

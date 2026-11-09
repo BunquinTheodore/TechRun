@@ -122,7 +122,7 @@ export const CONTENT = {
     {
       field: "paper", title: ["Official", "Singlets"], accent: "Singlets", ghost: "S",
       pitch: "Breathable race singlets in the full TechRun gradient",
-      badge: { big: "KIT", small: "Race Kit 2027" },
+      badge: { big: "Race Kit" },
       img: "singlets",
       // race bib cards shown on the CRT monitor: [src, alt]
       bibs: [
