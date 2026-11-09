@@ -84,8 +84,8 @@ const LOGO_RATIO = 363 / 193;    // C.assets.logo.black is 363 x 193
 // desktop: a two column grid inside the 130px margins. Wordmark left; one right column (x SIDE.x, as tall as the
 // wordmark) holds tagline, waitlist and details, with the runner under the rule above it. Portrait centres one column.
 const NM = lay(
-  { m: 130, logoX: 130, logoY: 58, logoH: 76, metaX: 300, metaY: 80, metaFs: 20, ruleY: 166, ruleW: 1660, blockY: 420,
-    runX: 1426, runY: 236, runS: 168, ctaX: 940, ctaY: 420, ctaW: 420, regH: 108, regFs: 40, noteFs: 16, partnerH: 56,
+  { m: 130, logoX: 130, logoY: 58, logoH: 76, metaX: 300, metaY: 80, metaFs: 20, ruleY: 166, ruleW: 1660, blockY: 344,
+    runX: 1426, runY: 184, runS: 144, ctaX: 940, ctaY: 420, ctaW: 420, regH: 108, regFs: 40, noteFs: 16, partnerH: 56,
     titleX: 1240, titleY: 716, titleW: 590, eyeFs: 20, tagFs: 40, botY: 900, botFs: 20 },
   { m: 90, logoX: 465, logoY: 40, logoH: 80, metaX: 0, metaY: 144, metaFs: 24, ruleY: 212, ruleW: 900, blockY: 404,
     runX: 468, runY: 224, runS: 144, ctaX: 90, ctaY: 800, ctaW: 900, regH: 120, regFs: 52, noteFs: 24, partnerH: 56,
@@ -93,7 +93,7 @@ const NM = lay(
 );
 const REG_W = lay(560, 640);
 // desktop right column: spans the wordmark block (top of TECH to the foot of 2027)
-const SIDE = { x: 1230, w: 560, top: 420, bottom: 880 };  // same band as the wordmark; runner centred above it
+const SIDE = { x: 1230, w: 560, top: 344, bottom: 804 };  // same band as the wordmark; runner centred above it
 
 // main hero button: the waitlist dialog until REGISTER_URL is set in content.js, then the registration link
 const ARROW = `<svg width="34" height="34" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 18 18 6M8 6h10v10" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="square"/></svg>`;
